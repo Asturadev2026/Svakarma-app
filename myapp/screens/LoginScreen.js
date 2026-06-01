@@ -13,10 +13,14 @@ import {
 
 import { useNavigation } from "@react-navigation/native";
 
+import { authService } from '../services/authService';
+import { Alert } from 'react-native';
+
 export default function LoginScreen() {
   const navigation = useNavigation();
 
   const [mobileNumber, setMobileNumber] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Validation
   const isValid = mobileNumber.length === 10;
@@ -28,18 +32,25 @@ export default function LoginScreen() {
   };
 
   // Send OTP
-  const handleSendOTP = () => {
-    if (isValid) {
-      const generatedOtp = "123456";
-
-      console.log(
-        `[AUTH] OTP Generated for ${mobileNumber}: ${generatedOtp}`
-      );
-
-      navigation.navigate("OTP", {
-        mobileNumber,
-        generatedOtp,
-      });
+  const handleSendOTP = async () => {
+    if (!isValid || loading) return;
+    setLoading(true);
+    try {
+      console.log(`[AUTH] Sending OTP for ${mobileNumber}...`);
+      const response = await authService.sendOtp(mobileNumber);
+      if (response.success) {
+        navigation.navigate("OTP", {
+          mobileNumber,
+          generatedOtp: "123456",
+        });
+      } else {
+        Alert.alert("Error", response.message || "Failed to send OTP. Please try again.");
+      }
+    } catch (error) {
+      console.log('[SEND_OTP_ERROR]', error);
+      Alert.alert("Network Error", error.message || "Failed to connect to the server.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,14 +112,14 @@ export default function LoginScreen() {
       <TouchableOpacity
         style={[
           styles.button,
-          isValid && styles.buttonActive,
+          (isValid && !loading) && styles.buttonActive,
         ]}
         onPress={handleSendOTP}
-        disabled={!isValid}
+        disabled={!isValid || loading}
         activeOpacity={0.85}
       >
         <Text style={styles.buttonText}>
-          Send OTP
+          {loading ? "Sending..." : "Send OTP"}
         </Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>

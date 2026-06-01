@@ -14,12 +14,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+import { authService } from '../services/authService';
+
 export default function OtpScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { mobileNumber, generatedOtp } = route.params || {};
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(30);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let interval = null;
@@ -33,12 +36,22 @@ export default function OtpScreen() {
 
   const isValid = otp.length === 6 && /^\d+$/.test(otp);
 
-  const handleVerify = () => {
-    // The requested hardcoded OTP is 123456. We'll check against '123456' directly or generatedOtp.
-    if (otp === '123456' || otp === generatedOtp) {
-      navigation.navigate('Permissions');
-    } else {
-      Alert.alert('Invalid OTP', 'Please enter the correct OTP (123456) to continue.');
+  const handleVerify = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      // Call standard verifyOtp service
+      const response = await authService.verifyOtp(mobileNumber || '9999999999', otp);
+      if (response.success) {
+        navigation.navigate('Permissions');
+      } else {
+        Alert.alert('Verification Failed', response.message || 'Invalid OTP code. Please try again.');
+      }
+    } catch (error) {
+      console.log('[AUTH_ERROR]', error);
+      Alert.alert('Verification Error', error.message || 'Something went wrong. Please check your network.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,11 +104,11 @@ export default function OtpScreen() {
 
             <View style={styles.footer}>
               <TouchableOpacity
-                style={[styles.button, !isValid && styles.buttonDisabled]}
+                style={[styles.button, (!isValid || loading) && styles.buttonDisabled]}
                 onPress={handleVerify}
-                disabled={!isValid}
+                disabled={!isValid || loading}
               >
-                <Text style={styles.buttonText}>Verify & Proceed</Text>
+                <Text style={styles.buttonText}>{loading ? 'Verifying...' : 'Verify & Proceed'}</Text>
               </TouchableOpacity>
             </View>
           </View>

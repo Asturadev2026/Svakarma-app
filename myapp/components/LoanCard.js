@@ -23,11 +23,11 @@ export default function LoanCard() {
       <View style={styles.topRow}>
         <View>
           <Text style={styles.label}>
-            Active Loan
+            Active Loan (SVK-2845102)
           </Text>
 
           <Text style={styles.amount}>
-            ₹4,20,000
+            ₹1,87,500
           </Text>
         </View>
 
@@ -47,7 +47,7 @@ export default function LoanCard() {
           </Text>
 
           <Text style={styles.bottomValue}>
-            ₹14,200
+            ₹13,850
           </Text>
         </View>
 
@@ -57,7 +57,7 @@ export default function LoanCard() {
           </Text>
 
           <Text style={styles.bottomValue}>
-            12 Jun
+            12 May
           </Text>
         </View>
 

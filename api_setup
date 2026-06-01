@@ -1,0 +1,319 @@
+# Svakarma App — Testing Walkthrough & Real API Integration Guide
+
+---
+
+## ✅ Part 1 — Pre-Flight Checks Before Every Testing Session
+
+### 1a. Start the Backend Server
+Open a terminal in `d:\ASTURA\svakarma-mobile\backend` and run:
+```bash
+npm run dev
+```
+**Expected output:**
+```
+🚀 Svakarma Backend running at http://localhost:5000
+📊 Health Check: http://localhost:5000/health
+```
+
+### 1b. Confirm Backend is Live
+Open your browser and visit: `http://localhost:5000/health`
+
+Expected JSON:
+```json
+{ "status": "ok", "service": "svakarma-mobile-backend" }
+```
+
+### 1c. Start the Mobile App
+Open a second terminal in `d:\ASTURA\svakarma-mobile\myapp` and run:
+```bash
+npx expo start
+```
+
+### 1d. ⚠️ Confirm Your LAN IP is Correct
+Your phone must be on the **same Wi-Fi network** as your PC. The LAN IP in [`api.js`](file:///d:/ASTURA/svakarma-mobile/myapp/services/api.js) must match your PC's current IP.
+
+**To check your PC's LAN IP:**
+```powershell
+ipconfig
+```
+Look for: `IPv4 Address . . . . . . : 192.168.x.x`
+
+Then open [`api.js`](file:///d:/ASTURA/svakarma-mobile/myapp/services/api.js) and confirm line 8:
+```js
+const DEV_LAN_IP = '10.207.133.221'; // ← Update if your IP changed
+```
+
+---
+
+## 🧪 Part 2 — Full App Testing Flow (Screen by Screen)
+
+### Screen 1: Splash Screen
+- Open Expo Go, scan the QR code
+- The **Svakarma logo** and tagline should appear for ~2 seconds
+- App automatically navigates to Login
+
+---
+
+### Screen 2: Login Screen
+**What to test:**
+- Enter a phone number with **fewer than 10 digits** → Button should remain **disabled** (greyed out)
+- Enter a **valid 10-digit number** (e.g. `9876543210`) → Button turns **red and active**
+- Tap **Send OTP** → Check your **backend terminal** for:
+  ```
+  [OTP Engine] OTP sent to 9876543210: 123456
+  ```
+
+---
+
+### Screen 3: OTP Screen
+**What to test:**
+- Enter wrong OTP (e.g. `000000`) → See **"Invalid OTP"** alert
+- Enter **`123456`** → App verifies, stores JWT token in device storage, navigates to Permissions
+
+---
+
+### Screen 4: Permissions Screen
+**What to test:**
+- See 3 permission cards: Notifications, Contacts, Location
+- Tap **Allow & Continue** → Navigates to **Home (MainTabs)**
+
+---
+
+### Screen 5: Home Screen
+**What to test:**
+- See the user greeting with name, company, city
+- **Offer Card** visible at top
+- **Quick Actions** row (Apply, EMI, CIBIL, Refer)
+- **Loan Card** → tap to navigate to `ApplyLoan`
+- **CIBIL Card** → tap to navigate to `CIBIL` screen
+- **Refer Banner** → tap to navigate to `Refer` screen
+- **News Cards** visible at the bottom
+
+---
+
+### Screen 6: Loans Tab (Bottom Nav)
+**What to test:**
+- Should show **"My Applications"** section
+  - If backend is connected: shows the mock `la_984321` application card with progress bar
+  - Pull-to-refresh works and re-fetches from backend
+- **3 Quick Action buttons** at top: Apply Now (red), EMI Calc, My Status
+- **Loan Products** section: 3 cards (Working Capital, Machinery, Business Expansion)
+- Tap any product → navigates to Apply Loan wizard
+
+---
+
+### Screen 7: Apply Loan (3-Step Wizard)
+**Step 1 – Amount & Purpose:**
+- All fields marked with red **`*`** are mandatory
+- Leave amount blank → tap Continue → **validation alert fires**
+- Enter amount less than `50000` → alert fires
+- Enter valid amount, tenure selection (12/24/36/60 months), and purpose → tap **Continue**
+
+**Step 2 – Business Details:**
+- Leave Business Name blank → alert fires
+- Enter business name + Udyam ID → tap **Continue**
+
+**Step 3 – KYC:**
+- Enter PAN less than 10 characters → alert fires on Submit
+- Enter Aadhaar less than 12 digits → alert fires
+- Enter valid: PAN `ABCDE1234F`, Aadhaar `123456789012`
+- Tap **Submit Application**
+- **Expected success:** Popup "Congratulations! 🎉 Your loan application has been submitted."
+- Tap **Track Status** → navigates to Application Status screen
+
+---
+
+### Screen 8: Application Status Screen
+**What to test:**
+- See the application summary card with amount and **"In Progress"** badge
+- See the **vertical timeline** with 5 steps:
+  - ✅ Application Submitted (completed)
+  - ✅ Document Verification (completed)
+  - ⬜ Credit Assessment (pending — subtitle visible)
+  - ⬜ Final Underwriting (pending)
+  - ⬜ Disbursal (pending)
+- Pull-to-refresh works
+
+---
+
+### Screen 9: EMI Tab (Bottom Nav)
+**What to test:**
+- **Monthly EMI** displays in large number on the red card
+- Principal / Interest split bar (white vs pink)
+- 3 breakdown values: Principal, Total Interest, Total Payable
+- **Amount stepper** buttons: `-50K`, `-100K`, `-5L` and `+50K`, `+100K`, `+5L`
+- **Interest Rate** steppers: -0.5%, -1%, -2% and +0.5%, +1%, +2%
+- **Tenure chips**: 6m, 12m, 24m, 36m, 60m, 84m — tap to change
+- All values update **instantly** after every change
+- **Smart Tip** text updates with actual interest savings calculation
+- Tap **Apply Now · ₹X,XXX/mo** → navigates to Apply Loan
+
+---
+
+### Screen 10: CIBIL Screen
+**What to test:**
+- Static screen showing the CIBIL intro page
+- Provider card: **TransUnion CIBIL** branding
+- Benefits list: 4 bullet points
+- Tap **Get my free score** *(this will call `/api/cibil` when wired up)*
+
+---
+
+### Screen 11: Refer & Earn Screen
+**What to test:**
+- See total earned / pending stats
+- Referral list showing Amit Sharma (Approved ₹1500) and Sanjay Deshmukh (Pending ₹500)
+- Enter a friend's name + phone number → tap Invite → new card appears
+
+---
+
+### Screen 12: Profile Screen
+**What to test:**
+- 85% completion card at top with red progress bar
+- 6 profile section cards (4 green ✓, 2 red COMPLETE badges for pending)
+- Quick Info card with PAN, Aadhaar, Udyam ID, GSTIN, Email, Mobile
+
+---
+
+## 🔌 Part 3 — Where to Integrate Real APIs (When Your Manager Provides Them)
+
+### 3a. OTP / SMS Gateway APIs
+> **File to edit:** [`backend/src/modules/auth/auth.routes.ts`](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/auth/auth.routes.ts) — line ~15
+
+```typescript
+// REPLACE THIS MOCK:
+const otp = '123456';
+otpStorage.set(phone, otp);
+console.log(`[OTP Engine] OTP sent to ${phone}: ${otp}`);
+
+// WITH REAL API (e.g. MSG91, Twilio, AWS SNS):
+const otp = Math.floor(100000 + Math.random() * 900000).toString();
+await smsGateway.sendOTP(phone, otp); // ← call your SMS provider here
+otpStorage.set(phone, otp);
+```
+
+---
+
+### 3b. Aadhaar eKYC / PAN Verification APIs
+> **File to edit:** [`backend/src/modules/auth/auth.routes.ts`](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/auth/auth.routes.ts) — inside `/verify-otp` route
+
+```typescript
+// After OTP verification, call KYC verification:
+const panResult = await kycProvider.verifyPAN(pan); // e.g. Surepass / DigioAPI / Karza
+const aadhaarResult = await kycProvider.verifyAadhaar(aadhaar);
+```
+
+> **Frontend field location:** [`screens/ApplyLoanScreen.js`](file:///d:/ASTURA/svakarma-mobile/myapp/screens/ApplyLoanScreen.js) — Step 3 KYC — PAN and Aadhaar inputs are already wired, just update `loanService.applyForLoan()` to send these to the backend.
+
+---
+
+### 3c. GST Verification API
+> **File to add:** `backend/src/modules/profile/profile.routes.ts` — add GSTIN check on profile update:
+
+```typescript
+// Example using Surepass GSTIN API
+router.post('/verify-gst', authMiddleware, async (req, res) => {
+  const { gstin } = req.body;
+  const result = await gstProvider.verify(gstin); // ← your GST API
+  res.json({ success: true, data: result });
+});
+```
+
+---
+
+### 3d. Credit Bureau APIs (CIBIL / Experian / Equifax)
+> **File to edit:** [`backend/src/modules/cibil/cibil.routes.ts`](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/cibil/cibil.routes.ts) — replace the hardcoded mock data:
+
+```typescript
+// REPLACE THIS:
+return res.json({ success: true, data: { score: 784, ... } });
+
+// WITH REAL CALL:
+const bureauResponse = await cibilProvider.fetchScore({
+  pan: user.pan,
+  dob: user.dob,
+  name: user.fullName,
+});
+return res.json({ success: true, data: bureauResponse });
+```
+
+---
+
+### 3e. Account Aggregator (AA) APIs
+> **New file to create:** `backend/src/modules/financial-data/aa.routes.ts`
+
+```typescript
+// AA consent flow to fetch bank statements from FIPs
+router.post('/aa/consent', authMiddleware, async (req, res) => {
+  const consentHandle = await aaProvider.createConsent(req.userId); // e.g. Finvu, Setu
+  res.json({ success: true, consentHandle });
+});
+
+router.get('/aa/fetch', authMiddleware, async (req, res) => {
+  const bankData = await aaProvider.fetchData(req.query.consentHandle);
+  res.json({ success: true, data: bankData });
+});
+```
+
+---
+
+### 3f. eNACH / UPI Mandate APIs
+> **New file to create:** `backend/src/modules/payments/enach.routes.ts`
+
+```typescript
+// Setup auto-debit mandate for EMI collection
+router.post('/enach/mandate', authMiddleware, async (req, res) => {
+  const { accountNumber, ifsc, amount, startDate } = req.body;
+  const mandate = await enachProvider.createMandate({ accountNumber, ifsc, amount, startDate });
+  res.json({ success: true, data: mandate });
+});
+```
+
+---
+
+### 3g. Loan Disbursement APIs
+> **File to edit:** [`backend/src/modules/loans/loan.routes.ts`](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/loans/loan.routes.ts) — add a disbursal endpoint:
+
+```typescript
+router.post('/disburse/:loanId', authMiddleware, async (req, res) => {
+  const { bankAccount, ifsc } = req.body;
+  const result = await disbursementProvider.transferFunds(loanId, bankAccount, ifsc); // IMPS/NEFT
+  res.json({ success: true, data: result });
+});
+```
+
+---
+
+### 3h. Email Service APIs
+> **New file to create:** `backend/src/shared/services/email.service.ts`
+
+```typescript
+// Use SendGrid / AWS SES / Nodemailer
+export const sendSanctionLetter = async (email: string, loanDetails: object) => {
+  await emailProvider.send({
+    to: email,
+    subject: 'Your Loan has been Sanctioned - Svakarma',
+    template: 'sanction_letter',
+    data: loanDetails,
+  });
+};
+```
+
+---
+
+## 📋 Part 4 — API Integration Checklist for Your Manager
+
+| API | Category | File to Update | Status |
+|-----|----------|---------------|--------|
+| OTP/SMS Gateway | Auth | `backend/src/modules/auth/auth.routes.ts` | 🔶 Mock |
+| PAN Verification | KYC | `backend/src/modules/auth/auth.routes.ts` | 🔶 Mock |
+| Aadhaar eKYC | KYC | `backend/src/modules/loans/loan.routes.ts` | 🔶 Mock |
+| GST Verification | Business | `backend/src/modules/profile/profile.routes.ts` | 🔶 Mock |
+| CIBIL Score | Credit Bureau | `backend/src/modules/cibil/cibil.routes.ts` | 🔶 Mock |
+| Account Aggregator | Bank Statements | New: `backend/src/modules/financial-data/` | ❌ Pending |
+| eNACH / UPI Mandate | Payments | New: `backend/src/modules/payments/` | ❌ Pending |
+| Loan Disbursement | Payments | `backend/src/modules/loans/loan.routes.ts` | ❌ Pending |
+| Email (Sanction Letter) | Notifications | New: `backend/src/shared/services/email.service.ts` | ❌ Pending |
+
+> 🔶 Mock = Functional with hardcoded test data. Just replace the mock block with the real SDK call.
+> ❌ Pending = File needs to be created when API credentials arrive.

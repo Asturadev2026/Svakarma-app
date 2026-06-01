@@ -27,24 +27,24 @@ export default function CibilCard() {
           </Text>
 
           <Text style={styles.score}>
-            782
+            742
           </Text>
         </View>
 
         <View style={styles.circle}>
           <Text style={styles.circleText}>
-            EXCELLENT
+            GOOD
           </Text>
         </View>
       </View>
 
       <View style={styles.progressBackground}>
-        <View style={styles.progressFill} />
+        <View style={[styles.progressFill, { width: "74%" }]} />
       </View>
 
       <Text style={styles.description}>
-        You're in the top credit bracket.
-        Eligible for premium rates.
+        You're in a strong credit bracket.
+        Eligible for competitive interest rates.
       </Text>
     </TouchableOpacity>
   );
