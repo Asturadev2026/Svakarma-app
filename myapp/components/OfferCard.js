@@ -9,6 +9,8 @@ import {
 
 import { useNavigation } from "@react-navigation/native";
 
+import { Feather } from "@expo/vector-icons";
+
 export default function OfferCard() {
   const navigation = useNavigation();
 
@@ -20,9 +22,12 @@ export default function OfferCard() {
         navigation.navigate("ApplyLoan")
       }
     >
-      <Text style={styles.tag}>
-        ✨ PRE-APPROVED OFFER
-      </Text>
+      <View style={styles.tagRow}>
+        <Feather name="sparkles" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+        <Text style={styles.tag}>
+          PRE-APPROVED OFFER
+        </Text>
+      </View>
 
       <View style={styles.expiryBadge}>
         <Text style={styles.expiryText}>
@@ -45,9 +50,7 @@ export default function OfferCard() {
           Tap to claim · Zero docs
         </Text>
 
-        <Text style={styles.arrow}>
-          →
-        </Text>
+        <Feather name="arrow-right" size={24} color="#FFFFFF" />
       </View>
     </TouchableOpacity>
   );
@@ -60,6 +63,11 @@ const styles = StyleSheet.create({
     padding: 22,
     marginBottom: 20,
     overflow: "hidden",
+  },
+
+  tagRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   tag: {

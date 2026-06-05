@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { loanService } from "../services/loanService";
+import { Ionicons, Feather } from "@expo/vector-icons";
 
 export default function ApplyLoanScreen({ navigation }) {
   const [step, setStep] = useState(1);
@@ -112,7 +113,7 @@ export default function ApplyLoanScreen({ navigation }) {
             {/* Header */}
             <View style={styles.header}>
               <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                <Text style={styles.backArrow}>←</Text>
+                <Ionicons name="arrow-back" size={24} color="#111827" />
               </TouchableOpacity>
               <Text style={styles.headerTitle}>Apply for Business Loan</Text>
               <View style={{ width: 42 }} />
@@ -278,8 +279,9 @@ export default function ApplyLoanScreen({ navigation }) {
                   />
 
                   <View style={styles.infoCard}>
+                    <Feather name="lock" size={16} color="#991B1B" style={{ marginRight: 8, marginTop: 1 }} />
                     <Text style={styles.infoText}>
-                      🔒 Your data is fully encrypted and stored securely using banking-grade security protocols.
+                      Your data is fully encrypted and stored securely using banking-grade security protocols.
                     </Text>
                   </View>
                 </View>
@@ -472,11 +474,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginTop: 10,
+    flexDirection: "row",
+    alignItems: "flex-start",
   },
   infoText: {
     color: "#991B1B",
     fontSize: 13,
     lineHeight: 18,
+    flex: 1,
   },
   footer: {
     padding: 24,

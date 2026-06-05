@@ -9,11 +9,13 @@ import {
 
 import { useNavigation } from "@react-navigation/native";
 
+import { Feather } from "@expo/vector-icons";
+
 export default function ReferBanner() {
   const navigation = useNavigation();
 
   const handlePress = () => {
-    navigation.getParent()?.navigate("Refer");
+    navigation.navigate("Refer");
   };
 
   return (
@@ -43,9 +45,9 @@ export default function ReferBanner() {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.icon}>
-        🎁
-      </Text>
+      <View style={styles.iconContainer}>
+        <Feather name="gift" size={44} color="#FF001E" />
+      </View>
     </TouchableOpacity>
   );
 }
@@ -92,7 +94,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  icon: {
-    fontSize: 52,
+  iconContainer: {
+    padding: 10,
   },
 });

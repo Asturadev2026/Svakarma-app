@@ -6,14 +6,96 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Linking,
+  Alert,
+  Share,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useNavigation } from "@react-navigation/native";
+import * as Clipboard from "expo-clipboard";
+import { Ionicons, Feather, FontAwesome } from "@expo/vector-icons";
 
 export default function ReferScreen() {
   const navigation = useNavigation();
+  const referralCode = "RAJESH2026";
+  const shareMessage = `Hey! Use my referral code ${referralCode} to apply for a business loan with Svakarma and get ₹2,500 off processing fees. Apply now!`;
+
+  const copyToClipboard = async () => {
+    try {
+      await Clipboard.setStringAsync(referralCode);
+      Alert.alert("Copied!", "Referral code copied to clipboard.");
+    } catch (error) {
+      Alert.alert("Error", "Failed to copy code to clipboard.");
+    }
+  };
+
+  const shareViaWhatsApp = async () => {
+    const url = `whatsapp://send?text=${encodeURIComponent(shareMessage)}`;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        // Fallback to Native Share Sheet
+        await Share.share({
+          message: shareMessage,
+        });
+      }
+    } catch (error) {
+      // Fallback to Native Share Sheet if error opening URL
+      await Share.share({
+        message: shareMessage,
+      });
+    }
+  };
+
+  const shareViaSMS = async () => {
+    const url = `sms:?body=${encodeURIComponent(shareMessage)}`;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        await Share.share({
+          message: shareMessage,
+        });
+      }
+    } catch (error) {
+      await Share.share({
+        message: shareMessage,
+      });
+    }
+  };
+
+  const shareViaEmail = async () => {
+    const url = `mailto:?subject=${encodeURIComponent("Svakarma Business Loan Referral")}&body=${encodeURIComponent(shareMessage)}`;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        await Share.share({
+          message: shareMessage,
+        });
+      }
+    } catch (error) {
+      await Share.share({
+        message: shareMessage,
+      });
+    }
+  };
+
+  const shareMore = async () => {
+    try {
+      await Share.share({
+        message: shareMessage,
+      });
+    } catch (error) {
+      Alert.alert("Error", "Could not open sharing options.");
+    }
+  };
 
   const steps = [
     {
@@ -50,9 +132,7 @@ export default function ReferScreen() {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backArrow}>
-              ←
-            </Text>
+            <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
 
           <Text style={styles.headerTitle}>
@@ -64,9 +144,9 @@ export default function ReferScreen() {
 
         {/* Banner */}
         <View style={styles.banner}>
-          <Text style={styles.gift}>
-            🎁
-          </Text>
+          <View style={styles.giftIconContainer}>
+            <Feather name="gift" size={36} color="#FF001E" />
+          </View>
 
           <Text style={styles.bannerLabel}>
             REFER & EARN
@@ -115,10 +195,11 @@ export default function ReferScreen() {
 
           <View style={styles.codeContainer}>
             <Text style={styles.code}>
-              RAJESH2026
+              {referralCode}
             </Text>
 
-            <TouchableOpacity style={styles.copyButton}>
+            <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
+              <Feather name="copy" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
               <Text style={styles.copyText}>
                 Copy
               </Text>
@@ -126,7 +207,8 @@ export default function ReferScreen() {
           </View>
 
           {/* WhatsApp */}
-          <TouchableOpacity style={styles.whatsappButton}>
+          <TouchableOpacity style={styles.whatsappButton} onPress={shareViaWhatsApp}>
+            <FontAwesome name="whatsapp" size={24} color="#FFFFFF" style={{ marginRight: 10 }} />
             <Text style={styles.whatsappText}>
               Share via WhatsApp
             </Text>
@@ -134,18 +216,33 @@ export default function ReferScreen() {
 
           {/* Share Buttons */}
           <View style={styles.shareRow}>
-            {["SMS", "Email", "More"].map(
-              (item, index) => (
+            {["SMS", "Email", "More"].map((item, index) => {
+              let onPressFunc;
+              let iconName;
+              if (item === "SMS") {
+                onPressFunc = shareViaSMS;
+                iconName = "message-square";
+              } else if (item === "Email") {
+                onPressFunc = shareViaEmail;
+                iconName = "mail";
+              } else {
+                onPressFunc = shareMore;
+                iconName = "share-2";
+              }
+              
+              return (
                 <TouchableOpacity
                   key={index}
                   style={styles.shareButton}
+                  onPress={onPressFunc}
                 >
+                  <Feather name={iconName} size={18} color="#111827" style={{ marginBottom: 6 }} />
                   <Text style={styles.shareText}>
                     {item}
                   </Text>
                 </TouchableOpacity>
-              )
-            )}
+              );
+            })}
           </View>
         </View>
 
@@ -228,8 +325,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
 
-  gift: {
-    fontSize: 44,
+  giftIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   bannerLabel: {
@@ -337,6 +439,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   copyText: {
@@ -348,6 +453,7 @@ const styles = StyleSheet.create({
     height: 64,
     backgroundColor: "#111111",
     borderRadius: 20,
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     marginTop: 20,
@@ -368,10 +474,11 @@ const styles = StyleSheet.create({
   shareButton: {
     width: "31%",
     backgroundColor: "#F4F4F4",
-    height: 54,
+    height: 68,
     borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
+    flexDirection: "column",
   },
 
   shareText: {

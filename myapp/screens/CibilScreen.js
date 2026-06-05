@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { cibilService } from "../services/cibilService";
+import { Ionicons, Feather } from "@expo/vector-icons";
 
 export default function CibilScreen() {
   const navigation = useNavigation();
@@ -70,7 +71,7 @@ export default function CibilScreen() {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backArrow}>←</Text>
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>
@@ -126,7 +127,7 @@ export default function CibilScreen() {
           <View style={styles.insightsCard}>
             {scoreData.insights?.map((insight, index) => (
               <View key={index} style={styles.insightRow}>
-                <Text style={styles.insightBullet}>•</Text>
+                <Feather name="check-circle" size={16} color="#FF001E" style={{ marginRight: 10, marginTop: 3 }} />
                 <Text style={styles.insightText}>{insight}</Text>
               </View>
             ))}
@@ -141,7 +142,7 @@ export default function CibilScreen() {
         <View style={styles.landingContent}>
           {/* Top Icon */}
           <View style={styles.iconCircle}>
-            <Text style={styles.icon}>📈</Text>
+            <Feather name="trending-up" size={44} color="#FF001E" />
           </View>
 
           {/* Main Title */}
@@ -169,17 +170,27 @@ export default function CibilScreen() {
 
           {/* Info Banner */}
           <View style={styles.infoBanner}>
-            <Text style={styles.infoBannerText}>
-              ✓ This is a soft pull · Will not affect your score
-            </Text>
+            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+              <Feather name="check" size={16} color="#15803D" style={{ marginRight: 6 }} />
+              <Text style={styles.infoBannerText}>
+                This is a soft pull · Will not affect your score
+              </Text>
+            </View>
           </View>
 
           {/* Benefits */}
           <View style={styles.benefitsContainer}>
-            <Text style={styles.benefit}>✓ Updated monthly, free forever</Text>
-            <Text style={styles.benefit}>✓ Detailed report with credit lines</Text>
-            <Text style={styles.benefit}>✓ Personalized tips to improve score</Text>
-            <Text style={styles.benefit}>✓ Alerts on score changes</Text>
+            {[
+              "Updated monthly, free forever",
+              "Detailed report with credit lines",
+              "Personalized tips to improve score",
+              "Alerts on score changes",
+            ].map((text, i) => (
+              <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+                <Feather name="check" size={16} color="#FF001E" style={{ marginRight: 8 }} />
+                <Text style={styles.benefitText}>{text}</Text>
+              </View>
+            ))}
           </View>
 
           {/* Spacer */}
@@ -334,10 +345,9 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingHorizontal: 6,
   },
-  benefit: {
+  benefitText: {
     color: "#4B5563",
     fontSize: 15,
-    lineHeight: 30,
   },
   button: {
     height: 60,

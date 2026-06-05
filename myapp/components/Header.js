@@ -8,6 +8,8 @@ import {
   Image,
 } from "react-native";
 
+import { Feather } from "@expo/vector-icons";
+
 export default function Header() {
   return (
     <View style={styles.container}>
@@ -21,11 +23,11 @@ export default function Header() {
       {/* Right Icons */}
       <View style={styles.rightSection}>
         <TouchableOpacity style={styles.iconButton}>
-          <Text style={styles.icon}>🔍</Text>
+          <Feather name="search" size={20} color="#111827" />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.iconButton}>
-          <Text style={styles.icon}>🔔</Text>
+          <Feather name="bell" size={20} color="#111827" />
         </TouchableOpacity>
       </View>
     </View>

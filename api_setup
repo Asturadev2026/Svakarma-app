@@ -40,7 +40,7 @@ Look for: `IPv4 Address . . . . . . : 192.168.x.x`
 
 Then open [`api.js`](file:///d:/ASTURA/svakarma-mobile/myapp/services/api.js) and confirm line 8:
 ```js
-const DEV_LAN_IP = '10.207.133.221'; // ← Update if your IP changed
+const DEV_LAN_IP = '10.47.14.221'; // ← Update if your IP changed
 ```
 
 ---

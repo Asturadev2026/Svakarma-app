@@ -6,6 +6,8 @@ import HomeScreen from "../screens/HomeScreen";
 import LoansScreen from "../screens/LoansScreen";
 import EMICalculatorScreen from "../screens/EMICalculatorScreen";
 
+import { Feather } from "@expo/vector-icons";
+
 const Tab = createBottomTabNavigator();
 
 export default function MainTabs() {
@@ -36,17 +38,20 @@ export default function MainTabs() {
         },
         tabBarActiveTintColor: "#FF001E",
         tabBarInactiveTintColor: "#9CA3AF",
-        tabBarIcon: ({ focused }) => {
+        tabBarIcon: ({ focused, color }) => {
           const icons = {
-            Home: "🏠",
-            Loans: "💰",
-            EMI: "🧾",
-            Profile: "👤",
+            Home: "home",
+            Loans: "credit-card",
+            EMI: "calculator",
+            Profile: "user",
           };
           return (
-            <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.7 }}>
-              {icons[route.name] || "🏠"}
-            </Text>
+            <Feather
+              name={icons[route.name] || "home"}
+              size={22}
+              color={color}
+              style={{ marginTop: 6 }}
+            />
           );
         },
       })}

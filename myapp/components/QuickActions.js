@@ -5,62 +5,84 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-
-const actions = [
-  {
-    label: "Apply",
-    icon: "👛",
-    screen: "ApplyLoan",
-  },
-
-  {
-    label: "Free CIBIL",
-    icon: "📈",
-    screen: "CIBIL",
-  },
-
-  {
-    label: "EMI Calc",
-    icon: "🧮",
-    screen: "EMICalculator",
-  },
-
-  {
-    label: "Status",
-    icon: "📄",
-    screen: "ApplicationStatus",
-  },
-
-  {
-    label: "Refer",
-    icon: "🎁",
-    screen: "ApplicationStatus",
-  },
-
-  {
-    label: "Profile",
-    icon: "🏢",
-    screen: "ApplicationStatus",
-  },
-
-  {
-    label: "Pay EMI",
-    icon: "🧾",
-    screen: "ApplicationStatus",
-  },
-
-  {
-    label: "Help",
-    icon: "❓",
-    screen: "ApplicationStatus",
-  },
-];
+import { Feather } from "@expo/vector-icons";
 
 export default function QuickActions() {
   const navigation = useNavigation();
+
+  const actions = [
+    {
+      label: "Apply",
+      icon: "file-text",
+      screen: "ApplyLoan",
+    },
+
+    {
+      label: "Free CIBIL",
+      icon: "trending-up",
+      screen: "CIBIL",
+    },
+
+    {
+      label: "EMI Calc",
+      icon: "calculator",
+      screen: "EMICalculator",
+    },
+
+    {
+      label: "Status",
+      icon: "activity",
+      screen: "ApplicationStatus",
+    },
+
+    {
+      label: "Refer",
+      icon: "gift",
+      screen: "Refer",
+    },
+
+    {
+      label: "Profile",
+      icon: "user",
+      screen: "MainTabs",
+      params: { screen: "Profile" },
+    },
+
+    {
+      label: "Pay EMI",
+      icon: "credit-card",
+      screen: "MainTabs",
+      params: { screen: "EMI" },
+    },
+
+    {
+      label: "Help",
+      icon: "help-circle",
+      onPress: () => {
+        Alert.alert(
+          "Customer Support",
+          "We are here to help you! Reach out to us via:\n\n📞 Toll Free: 1800-123-4567\n✉️ Email: support@svakarma.com",
+          [{ text: "OK" }]
+        );
+      },
+    },
+  ];
+
+  const handlePress = (item) => {
+    if (item.onPress) {
+      item.onPress();
+    } else if (item.screen) {
+      if (item.params) {
+        navigation.navigate(item.screen, item.params);
+      } else {
+        navigation.navigate(item.screen);
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -69,14 +91,10 @@ export default function QuickActions() {
           key={index}
           style={styles.card}
           activeOpacity={0.85}
-          onPress={() =>
-            navigation.navigate(item.screen)
-          }
+          onPress={() => handlePress(item)}
         >
           <View style={styles.iconBox}>
-            <Text style={styles.icon}>
-              {item.icon}
-            </Text>
+            <Feather name={item.icon} size={24} color="#FF001E" />
           </View>
 
           <Text style={styles.label}>
@@ -109,19 +127,16 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 18,
-    backgroundColor: "#F4F4F4",
+    backgroundColor: "#FFF2F3",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
-  },
-
-  icon: {
-    fontSize: 24,
   },
 
   label: {
     fontSize: 13,
     color: "#111827",
     textAlign: "center",
+    fontWeight: "600",
   },
 });

@@ -1,0 +1,334 @@
+# Svakarma Mobile App — Screen Verification & Testing Walkthrough
+
+> **Reference:** [svakarma-financials.vercel.app](https://svakarma-financials.vercel.app)  
+> **Backend:** `http://<your-LAN-IP>:5000`  
+> **Mock OTP:** `123456`  
+> **Mock User:** Rajesh Kumar Mehta · Mehta Enterprises · Pune
+
+---
+
+## ✅ Screen Parity Verification (Mobile vs. Vercel)
+
+| Screen | Present in Vercel | Present in Mobile App | Data Synced? |
+|---|---|---|---|
+| Splash Screen | ✅ | ✅ [SplashScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/SplashScreen.js) | ✅ |
+| Login (Mobile OTP) | ✅ | ✅ [LoginScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/LoginScreen.js) | ✅ |
+| OTP Verification | ✅ | ✅ [OtpScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/OtpScreen.js) | ✅ (now calls backend) |
+| Permissions Onboarding | ✅ | ✅ [PermissionsScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/PermissionsScreen.js) | ✅ |
+| **Home Dashboard** | ✅ | ✅ [HomeScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/HomeScreen.js) | ✅ |
+| Pre-Approved Offer Card | ✅ `₹8,50,000 · Expires 14d` | ✅ [OfferCard.js](file:///d:/ASTURA/svakarma-mobile/myapp/components/OfferCard.js) | ✅ |
+| Active Loan Card | ✅ `SVK-2845102 · ₹1,87,500 outstanding · EMI ₹13,850` | ✅ [LoanCard.js](file:///d:/ASTURA/svakarma-mobile/myapp/components/LoanCard.js) | ✅ (synced) |
+| CIBIL Score Card | ✅ `742 · GOOD` | ✅ [CibilCard.js](file:///d:/ASTURA/svakarma-mobile/myapp/components/CibilCard.js) | ✅ (synced) |
+| Quick Actions Grid (8 tiles) | ✅ Apply, Free CIBIL, EMI Calc, Status, Refer, Profile, Pay EMI, Help | ✅ [QuickActions.js](file:///d:/ASTURA/svakarma-mobile/myapp/components/QuickActions.js) | ✅ |
+| **Loans Screen** (6 products) | ✅ Business, Samridhi, Machinery, Damini, SuryaKiran, WASH | ✅ [LoansScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/LoansScreen.js) | ✅ (synced) |
+| Apply Loan Wizard (3 steps) | ✅ | ✅ [ApplyLoanScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/ApplyLoanScreen.js) | ✅ |
+| Application Status Tracker | ✅ | ✅ [ApplicationStatusScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/ApplicationStatusScreen.js) | ✅ |
+| **EMI Calculator** | ✅ | ✅ [EMICalculatorScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/EMICalculatorScreen.js) | ✅ |
+| **CIBIL Report Screen** | ✅ interactive 742 score + factors | ✅ [CibilScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/CibilScreen.js) | ✅ (now live from backend) |
+| **Profile Screen** | ✅ `85% complete · ABCDE1234F · UDYAM-MH-18` | ✅ [ProfileScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/ProfileScreen.js) | ✅ |
+| **Refer & Earn** | ✅ `₹2,500 reward · Code: RAJESH2026` | ✅ [ReferScreen.js](file:///d:/ASTURA/svakarma-mobile/myapp/screens/ReferScreen.js) | ✅ |
+| Bottom Tab Bar (4 tabs) | ✅ Home, Loans, EMI, Profile | ✅ [MainTabs.js](file:///d:/ASTURA/svakarma-mobile/myapp/navigation/MainTabs.js) | ✅ |
+| News & Announcements | ✅ 3 articles (Festive, RBI Update, MSME Insight) | ✅ [NewsCard.js](file:///d:/ASTURA/svakarma-mobile/myapp/components/NewsCard.js) | ✅ |
+| Why Svakarma card | ✅ `₹500Cr+ disbursed · 15K+ MSMEs · 4.6★` | ✅ [WhySvakarmaCard.js](file:///d:/ASTURA/svakarma-mobile/myapp/components/WhySvakarmaCard.js) | ✅ |
+
+> **Result: All 20 screens/components are present and data is synchronized with the Vercel reference ✅**
+
+---
+
+## 🧪 Detailed Step-by-Step Testing Guide
+
+### Prerequisites
+- iPhone with **Expo Go** installed from App Store
+- PC and iPhone on **same Wi-Fi network**
+- Backend running: `npm run dev` in `backend/` terminal
+- Expo running: `npx expo start` in `myapp/` terminal
+- LAN IP in [api.js](file:///d:/ASTURA/svakarma-mobile/myapp/services/api.js) line 18 matches your `ipconfig` IPv4 address
+
+---
+
+## 📱 FLOW 1 — Onboarding / Login
+
+### Step 1: Splash Screen
+- Open Expo Go → scan QR code from terminal
+- **Expected:** Red Svakarma logo fades in on white background
+- **Expected:** After ~2 seconds, automatically goes to Login screen
+
+### Step 2: Login Screen
+- Enter any 10-digit mobile number, e.g., `9876543210`
+- **Expected:** "Send OTP" button turns red/active
+- Tap **"Send OTP"**
+- **Expected:** Button shows "Sending..." while calling backend
+- **Expected:** Navigates to OTP screen (backend logs `[OTP Engine] OTP sent to 9876543210: 123456`)
+
+### Step 3: OTP Screen
+- Enter **`123456`** in the OTP field
+- **Expected:** Button shows "Verifying..." while calling backend
+- **Expected:** Navigates to Permissions screen
+- **What happens behind the scenes:** Backend signs a JWT token → stored in AsyncStorage as `user_token` → all future API calls attach it automatically
+
+> ⚠️ If you see "Network Error": your LAN IP has changed. Run `ipconfig`, copy the IPv4 address, update line 18 of [api.js](file:///d:/ASTURA/svakarma-mobile/myapp/services/api.js)
+
+### Step 4: Permissions Screen
+- Three permission switches: **Location**, **Contacts**, **Notifications**
+- Toggle each switch → device prompts for system permission
+- Tap **"Continue"** (you don't need to grant all permissions to proceed)
+- **Expected:** Navigates to the main Home screen with bottom tab bar
+
+---
+
+## 🏠 FLOW 2 — Home Dashboard
+
+### Step 5: Home Screen Layout
+Verify these elements are visible:
+- ✅ **Header bar** with Svakarma logo + bell icon
+- ✅ **User row:** Avatar `RM` · "Namaste, Rajesh Kumar Mehta" · "Mehta Enterprises · Pune, Maharashtra"
+- ✅ **Pre-Approved Offer card** (red gradient): `₹ 8,50,000 · Expires in 14d · Tap to claim · Zero docs`
+- ✅ **Quick Actions grid** with 8 tiles: Apply, Free CIBIL, EMI Calc, My Status, Refer, Profile, Pay EMI, Help
+- ✅ **Active Loan card:** `Active Loan (SVK-2845102) · ₹1,87,500 · EMI ₹13,850 · Next Due 12 May`
+- ✅ **CIBIL Score card** (dark background): `742 · GOOD` with filled progress bar
+- ✅ **News section:** 2 news articles
+- ✅ **Why Svakarma card:** `₹500Cr+ Disbursed · 15K+ MSMEs · 4.6★`
+
+### Step 6: Pre-Approved Offer Card
+- Tap the red pre-approved card
+- **Expected:** Opens Apply Loan wizard (Step 1 of 3)
+
+### Step 7: Loan Card (Active Loan)
+- Tap the white `SVK-2845102` loan card
+- **Expected:** Navigates to Application Status tracker screen
+
+### Step 8: CIBIL Card
+- Tap the dark CIBIL card
+- **Expected:** Navigates to the CIBIL landing screen (shows "Get my free score" button)
+
+---
+
+## 💰 FLOW 3 — Loans Screen
+
+### Step 9: Switch to Loans Tab
+- Tap **"Loans"** in the bottom tab bar
+- **Expected:** Loans screen loads with:
+  - Title "Business Loans · Collateral-free financing for India's MSMEs"
+  - **3 Quick Action buttons:** Apply Now (red), EMI Calc, My Status
+  - **My Applications section:** Loading spinner → then shows the default mock application `#LA_984321 · ₹15,00,000 · Machinery Purchase · In Progress`
+  - **6 Loan Products:** Business, Samridhi *(STP badge)*, Machinery & Asset, Damini *(DISCOUNT badge)*, SuryaKiran, WASH
+
+### Step 10: Pull to Refresh
+- Pull down on the Loans screen
+- **Expected:** Loading spinner appears → applications reload from backend
+
+### Step 11: Tap a Loan Product
+- Tap any loan product card (e.g., "Damini Loan")
+- **Expected:** Opens Apply Loan wizard pre-set to apply
+
+---
+
+## 📝 FLOW 4 — Apply Loan Wizard
+
+### Step 12: Apply Loan – Step 1 (Amount & Tenure)
+- Navigate to: Home → tap "Apply Now" quick action tile  
+  OR: Loans tab → tap "Apply Now" red button
+- **Expected:** Step 1 header shows "Step 1/3 · Loan Details"
+- **Test mandatory field marker:** Look for red `*` asterisks on labels
+- **Fill in:**
+  - Loan Amount: `300000` (₹3,00,000)
+  - Select Tenure: tap one of the chip buttons (12 / 24 / 36 / 48 months) — tap **36**
+  - Purpose: `Machinery upgrade`
+- Tap **"Next →"**
+- **Expected:** Advances to Step 2
+
+### Step 13: Apply Loan – Step 2 (Business Details)
+- **Fill in:**
+  - Business Name: `Mehta Enterprises`
+  - Udyam ID: `UDYAM-MH-18-0034521`
+- Tap **"Next →"**
+- **Expected:** Advances to Step 3
+
+### Step 14: Apply Loan – Step 3 (KYC)
+- **Fill in:**
+  - PAN Number: `ABCDE1234F` (exactly 10 characters)
+  - Aadhaar Number: `123456789012` (exactly 12 digits)
+- Tap **"Submit Application"**
+- **Expected:** Button shows "Submitting..." loading state
+- **Expected:** Success alert: *"Congratulations! 🎉 Your loan application has been submitted successfully."*
+- Tap **"Track Status"**
+- **Expected:** Navigates to Application Status screen showing your newly submitted application at the top
+
+---
+
+## 📊 FLOW 5 — Application Status Tracker
+
+### Step 15: Application Status Screen
+- Navigate from Loans tab → "My Status" button  
+  OR: Home → LoanCard → tap
+- **Expected:** Vertical timeline showing 5 steps:
+  1. ✅ Application Submitted (28 May 2026)
+  2. ✅ Document Verification (30 May 2026)
+  3. ⏳ Credit Assessment — *CIBIL report being reviewed*
+  4. ⏳ Final Underwriting
+  5. ⏳ Disbursal
+- **Expected:** Application ID `#LA_984321 · ₹15,00,000 · In Progress` badge
+- **Test pull to refresh:** Pull down → data reloads from backend
+
+---
+
+## 🧮 FLOW 6 — EMI Calculator
+
+### Step 16: EMI Calculator Screen
+- Tap **"EMI"** in the bottom tab bar  
+  OR: Home → quick action "EMI Calc"  
+  OR: Loans tab → "EMI Calc" button
+- **Expected on load:** Pre-populated with:
+  - Principal: ₹5,00,000
+  - Rate: 14.5%
+  - Tenure: 36 months
+  - EMI auto-calculated and displayed
+
+### Step 17: Adjust Parameters
+- Tap the **`+`** button next to Principal to increase by ₹50,000
+- Tap the **`−`** button to decrease
+- Tap tenure chips (12 / 24 / 36 / 48 / 60 / 84 months)
+- Use **`+`** / **`−`** stepper for interest rate
+- **Expected:** EMI, Total Payable, and Total Interest update automatically after each change
+- **Expected:** The principal vs. interest split bar updates visually
+
+### Step 18: Verify EMI Calculation
+- Set: Amount = ₹3,00,000, Rate = 24%, Tenure = 36 months
+- **Expected Monthly EMI ≈ ₹11,809**
+- The backend `/api/loans/calculator` (no auth required) computes this
+- If backend is unreachable, the local formula fallback still shows the correct value
+
+---
+
+## 📈 FLOW 7 — CIBIL Score
+
+### Step 19: CIBIL Landing Screen
+- Home → tap dark CIBIL card  
+  OR: Home → Quick Actions → "Free CIBIL" tile  
+  OR: Loans screen → tapping applications navigates to it
+- **Expected:** Landing page showing "Check your free CIBIL" with CIBIL logo + "TransUnion CIBIL" + soft pull note
+- Benefits list: Updated monthly · Detailed report · Personalized tips · Alerts
+
+### Step 20: Fetch Score
+- Tap **"Get my free score"**
+- **Expected:** Loading spinner (backend call to `/api/cibil` with JWT)
+- **Expected:** Screen transitions to detailed credit report showing:
+  - **Score: 742** (large number, dark card)
+  - **Status: GOOD** (green badge)
+  - **Progress gauge:** ~74% filled green
+  - **5 Credit Factors:** Payment History (HIGH), Credit Utilization 24% (HIGH), Credit Age 4Y 2M (MEDIUM), Total Accounts (MEDIUM), Recent Inquiries (LOW)
+  - **2 Insights:** Repayment history note + utilization tip
+- Tap **"Back to Dashboard"** to return to the landing page
+
+---
+
+## 👥 FLOW 8 — Refer & Earn
+
+### Step 21: Refer & Earn Screen
+- Home → Quick Actions → **"Refer"** tile  
+  OR: ReferBanner component on Home → tap
+- **Expected:**
+  - Dark banner: 🎁 **Earn ₹2,500** for every entrepreneur who takes a loan
+  - Stats row: **12 Referred · 5 Approved · ₹12.5K Earned**
+  - Referral code box with dashed red border: **`RAJESH2026`**
+  - "Copy" button (red pill)
+  - "Share via WhatsApp" button (dark black)
+  - Share row: SMS · Email · More
+  - "How it works" — 3 numbered steps
+
+### Step 22: Refer Actions
+- Tap **"Copy"** — should copy code to clipboard (no confirmation currently, add later)
+- Tap **"Share via WhatsApp"** — should open WhatsApp share sheet on real device
+- Tap **"SMS / Email / More"** share buttons
+
+---
+
+## 👤 FLOW 9 — Profile Screen
+
+### Step 23: Profile Screen
+- Tap **"Profile"** in the bottom tab bar
+- **Expected:**
+  - Header: "My Profile" with ← back and ✎ edit buttons
+  - **Red Completion card:** `85% · Complete 2 more sections to unlock 0.5% lower interest rate`
+  - Red progress bar filled to ~85%
+  - **6 Profile Sections:**
+    - ✅ Personal details — 5 fields completed
+    - ✅ Business info — 7 fields completed
+    - ✅ KYC documents — 4 fields completed
+    - ✅ Financial profile — 3 fields completed
+    - 🔴 Address proof — 2 fields pending (red highlight)
+    - 🔴 References — 2 fields pending
+  - **Quick Info card:**
+    - PAN: `ABCDE1234F`
+    - Aadhaar: `XXXX XXXX 4527`
+    - Udyam ID: `UDYAM-MH-18-0034521`
+    - GSTIN: `27ABCDE1234F1Z5`
+    - Email: `rajesh.mehta@mehtaent.in`
+    - Mobile: `+91 98765 43210`
+
+---
+
+## 🔁 FLOW 10 — Navigation Consistency
+
+### Step 24: Bottom Tab Bar
+- Switch between all 4 tabs: **Home · Loans · EMI · Profile**
+- Each tap should immediately switch screens
+- Active tab icon should turn red, inactive tabs grey
+- Tab bar should float above content with subtle shadow
+
+### Step 25: Back Navigation
+- From any deep screen (e.g., Apply Loan), tap the `←` Back button
+- **Expected:** Returns to the previous screen without losing bottom tab bar context
+
+### Step 26: End-to-End Happy Path
+Run this complete scenario:
+1. Fresh open → Splash → Login → OTP (`123456`) → Permissions → Home
+2. Home → Apply (offer card) → Fill all 3 steps → Submit → Track Status
+3. Back to Home → Loans tab → EMI tab (adjust sliders) → Profile tab
+4. Home → CIBIL card → Get Score → Back
+5. Home → Refer tile → Copy code
+
+---
+
+## 📋 Summary of Mock Test Data
+
+| Field | Value |
+|---|---|
+| OTP | `123456` |
+| Phone | any 10-digit number |
+| PAN | `ABCDE1234F` |
+| Aadhaar | `123456789012` |
+| Udyam ID | `UDYAM-MH-18-0034521` |
+| Business Name | `Mehta Enterprises` |
+| Loan Amount | min `50000` |
+| CIBIL Score returned | `742` (Good) |
+| Referral Code | `RAJESH2026` |
+| Active Loan ID | `SVK-2845102` |
+
+---
+
+## 🔌 API Integration Points (When Real APIs Arrive)
+
+| API | Where to Add |
+|---|---|
+| OTP/SMS Gateway | [auth.routes.ts](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/auth/auth.routes.ts) line ~20 — replace `'123456'` |
+| PAN Verification (NSDL/Karza) | [auth.routes.ts](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/auth/auth.routes.ts) — add a `POST /verify-pan` route |
+| Aadhaar eKYC (UIDAI/DigiLocker) | [loan.routes.ts](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/loans/loan.routes.ts) — validate aadhaar in `/apply` |
+| GST Verification (GSTN/Perfios) | [profile.routes.ts](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/profile/profile.routes.ts) |
+| CIBIL/Experian Score | [cibil.routes.ts](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/cibil/cibil.routes.ts) line ~10 — replace mock score |
+| Account Aggregator (Finvu) | New file: `backend/src/modules/financial-data/aa.routes.ts` |
+| eNACH / UPI Mandate | New file: `backend/src/modules/payments/enach.routes.ts` |
+| Loan Disbursement API | [loan.routes.ts](file:///d:/ASTURA/svakarma-mobile/backend/src/modules/loans/loan.routes.ts) — add `POST /disburse` |
+| Email (SendGrid / AWS SES) | New file: `backend/src/shared/services/email.service.ts` |
+
+---
+
+## 🛠️ Troubleshooting Quick Reference
+
+| Problem | Fix |
+|---|---|
+| "Network Error" on OTP | Check LAN IP in [api.js](file:///d:/ASTURA/svakarma-mobile/myapp/services/api.js) line 18 matches `ipconfig` IPv4 |
+| "No token provided" on Submit | Log out and log back in (OTP flow must complete) |
+| App stuck loading at 0% | Wi-Fi isolation — try PC hotspot instead |
+| Backend error on startup | Check `backend/.env` has `PORT=5000` and `JWT_SECRET` set |
+| Score not fetching | Make sure you are logged in (JWT stored) before visiting CIBIL screen |

@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { loanService } from "../services/loanService";
+import { Ionicons, Feather } from "@expo/vector-icons";
 
 export default function ApplicationStatusScreen({ navigation }) {
   const [applications, setApplications] = useState([]);
@@ -55,7 +56,7 @@ export default function ApplicationStatusScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backArrow}>←</Text>
+          <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Application Status</Text>
         <View style={{ width: 42 }} />
@@ -68,7 +69,7 @@ export default function ApplicationStatusScreen({ navigation }) {
       >
         {!activeApp ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>📄</Text>
+            <Feather name="file-text" size={64} color="#9CA3AF" style={{ marginBottom: 16 }} />
             <Text style={styles.emptyHeading}>No Applications Found</Text>
             <Text style={styles.emptySubheading}>
               You haven't submitted any loan applications yet. Apply now to get quick financing.
@@ -115,7 +116,7 @@ export default function ApplicationStatusScreen({ navigation }) {
                         isCompleted ? styles.dotCompleted : styles.dotPending,
                       ]}
                     >
-                      {isCompleted && <Text style={styles.dotCheck}>✓</Text>}
+                      {isCompleted && <Feather name="check" size={14} color="#FFFFFF" />}
                     </View>
 
                     {/* Details content */}

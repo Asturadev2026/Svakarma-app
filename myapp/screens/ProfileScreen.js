@@ -9,49 +9,52 @@ import {
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons, Feather } from "@expo/vector-icons";
 
 export default function ProfileScreen() {
+  const navigation = useNavigation();
   const sections = [
     {
       title: "Personal details",
       fields: "5 fields completed",
       completed: true,
-      icon: "👤",
+      icon: "user",
     },
 
     {
       title: "Business info",
       fields: "7 fields completed",
       completed: true,
-      icon: "🏢",
+      icon: "briefcase",
     },
 
     {
       title: "KYC documents",
       fields: "4 fields completed",
       completed: true,
-      icon: "🛡️",
+      icon: "shield",
     },
 
     {
       title: "Financial profile",
       fields: "3 fields completed",
       completed: true,
-      icon: "📈",
+      icon: "trending-up",
     },
 
     {
       title: "Address proof",
       fields: "2 fields pending",
       completed: false,
-      icon: "📍",
+      icon: "map-pin",
     },
 
     {
       title: "References",
       fields: "2 fields pending",
       completed: false,
-      icon: "👥",
+      icon: "users",
     },
   ];
 
@@ -63,10 +66,8 @@ export default function ProfileScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton}>
-            <Text style={styles.backArrow}>
-              ←
-            </Text>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
 
           <Text style={styles.headerTitle}>
@@ -74,9 +75,7 @@ export default function ProfileScreen() {
           </Text>
 
           <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editIcon}>
-              ✎
-            </Text>
+            <Feather name="edit-2" size={18} color="#FF001E" />
           </TouchableOpacity>
         </View>
 
@@ -109,48 +108,47 @@ export default function ProfileScreen() {
         </Text>
 
         {/* Profile Cards */}
-        {sections.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.sectionCard,
+        {sections.map((item, index) => {
+          const iconColor = item.completed ? "#16A34A" : "#FF001E";
+          const iconBg = item.completed ? "#EEF7F0" : "#FFF5F5";
+          
+          return (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.sectionCard,
+                !item.completed && styles.pendingCard,
+              ]}
+              activeOpacity={0.85}
+            >
+              <View style={styles.leftRow}>
+                <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
+                  <Feather name={item.icon} size={22} color={iconColor} />
+                </View>
 
-              !item.completed &&
-                styles.pendingCard,
-            ]}
-            activeOpacity={0.85}
-          >
-            <View style={styles.leftRow}>
-              <View style={styles.iconBox}>
-                <Text style={styles.icon}>
-                  {item.icon}
-                </Text>
+                <View>
+                  <Text style={styles.sectionTitle}>
+                    {item.title}
+                  </Text>
+
+                  <Text style={styles.sectionSubtitle}>
+                    {item.fields}
+                  </Text>
+                </View>
               </View>
 
-              <View>
-                <Text style={styles.sectionTitle}>
-                  {item.title}
-                </Text>
-
-                <Text style={styles.sectionSubtitle}>
-                  {item.fields}
-                </Text>
-              </View>
-            </View>
-
-            {item.completed ? (
-              <Text style={styles.checkmark}>
-                ✓
-              </Text>
-            ) : (
-              <View style={styles.completeBadge}>
-                <Text style={styles.completeText}>
-                  COMPLETE
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        ))}
+              {item.completed ? (
+                <Feather name="check-circle" size={24} color="#16A34A" />
+              ) : (
+                <View style={styles.completeBadge}>
+                  <Text style={styles.completeText}>
+                    COMPLETE
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
 
         {/* Quick Info */}
         <Text style={styles.sectionHeading}>

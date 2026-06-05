@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons, Feather } from "@expo/vector-icons";
 
 import * as Location from "expo-location";
 import * as Contacts from "expo-contacts";
@@ -83,7 +84,7 @@ export default function PermissionsScreen() {
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
-        <Text style={styles.backArrow}>←</Text>
+        <Ionicons name="arrow-back" size={24} color="#111827" />
       </TouchableOpacity>
 
       {/* Heading */}
@@ -99,7 +100,7 @@ export default function PermissionsScreen() {
       {/* Location */}
       <View style={styles.card}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>📍</Text>
+          <Feather name="map-pin" size={22} color="#FF001E" />
         </View>
 
         <View style={styles.textContainer}>
@@ -127,7 +128,7 @@ export default function PermissionsScreen() {
       {/* Contacts */}
       <View style={styles.card}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>👥</Text>
+          <Feather name="users" size={22} color="#FF001E" />
         </View>
 
         <View style={styles.textContainer}>
@@ -155,7 +156,7 @@ export default function PermissionsScreen() {
       {/* Notifications */}
       <View style={styles.card}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>🔔</Text>
+          <Feather name="bell" size={22} color="#FF001E" />
         </View>
 
         <View style={styles.textContainer}>
@@ -182,8 +183,9 @@ export default function PermissionsScreen() {
 
       {/* Info Box */}
       <View style={styles.infoBox}>
+        <Feather name="shield" size={20} color="#FF001E" style={{ marginRight: 10, marginTop: 2 }} />
         <Text style={styles.infoText}>
-          🛡️ We do not access your photos,
+          We do not access your photos,
           media or full contact list. Bank SMS
           access is not required — we use the
           Account Aggregator framework instead.
@@ -294,12 +296,15 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 18,
     marginTop: 10,
+    flexDirection: "row",
+    alignItems: "flex-start",
   },
 
   infoText: {
     color: "#4B5563",
     fontSize: 14,
     lineHeight: 24,
+    flex: 1,
   },
 
   button: {
