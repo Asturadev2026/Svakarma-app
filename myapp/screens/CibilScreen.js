@@ -127,7 +127,7 @@ export default function CibilScreen() {
           <View style={styles.insightsCard}>
             {scoreData.insights?.map((insight, index) => (
               <View key={index} style={styles.insightRow}>
-                <Feather name="check-circle" size={16} color="#FF001E" style={{ marginRight: 10, marginTop: 3 }} />
+                <Feather name="check-circle" size={16} color="#8B1A1A" style={{ marginRight: 10, marginTop: 3 }} />
                 <Text style={styles.insightText}>{insight}</Text>
               </View>
             ))}
@@ -142,7 +142,7 @@ export default function CibilScreen() {
         <View style={styles.landingContent}>
           {/* Top Icon */}
           <View style={styles.iconCircle}>
-            <Feather name="trending-up" size={44} color="#FF001E" />
+            <Feather name="trending-up" size={44} color="#8B1A1A" />
           </View>
 
           {/* Main Title */}
@@ -187,7 +187,7 @@ export default function CibilScreen() {
               "Alerts on score changes",
             ].map((text, i) => (
               <View key={i} style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-                <Feather name="check" size={16} color="#FF001E" style={{ marginRight: 8 }} />
+                <Feather name="check" size={16} color="#8B1A1A" style={{ marginRight: 8 }} />
                 <Text style={styles.benefitText}>{text}</Text>
               </View>
             ))}
@@ -352,11 +352,11 @@ const styles = StyleSheet.create({
   button: {
     height: 60,
     borderRadius: 20,
-    backgroundColor: "#FF001E",
+    backgroundColor: "#8B1A1A",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 24,
-    shadowColor: "#FF001E",
+    shadowColor: "#8B1A1A",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
   },
   insightBullet: {
     fontSize: 18,
-    color: "#FF001E",
+    color: "#8B1A1A",
     marginRight: 10,
     lineHeight: 22,
   },

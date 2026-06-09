@@ -129,7 +129,7 @@ export default function LoansScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#E60012"
+            tintColor="#8B1A1A"
           />
         }
       >
@@ -142,7 +142,7 @@ export default function LoansScreen() {
         {/* Quick Actions */}
         <View style={styles.quickActionsRow}>
           <TouchableOpacity
-            style={[styles.quickCard, { backgroundColor: "#E60012" }]}
+            style={[styles.quickCard, { backgroundColor: "#8B1A1A" }]}
             onPress={() => navigation.navigate("ApplyLoan")}
             activeOpacity={0.88}
           >
@@ -173,7 +173,7 @@ export default function LoansScreen() {
         <Text style={styles.sectionTitle}>My Applications</Text>
         {loading ? (
           <View style={styles.loadingBox}>
-            <ActivityIndicator color="#E60012" size="small" />
+            <ActivityIndicator color="#8B1A1A" size="small" />
             <Text style={styles.loadingText}>Fetching your loans...</Text>
           </View>
         ) : applications.length === 0 ? (
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   emptyActionBtn: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 14,
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
     borderRadius: 6,
   },
   progressLabel: { fontSize: 11, color: "#9CA3AF", marginTop: 8 },

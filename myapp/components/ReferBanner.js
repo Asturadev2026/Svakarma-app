@@ -46,7 +46,7 @@ export default function ReferBanner() {
       </View>
 
       <View style={styles.iconContainer}>
-        <Feather name="gift" size={44} color="#FF001E" />
+        <Feather name="gift" size={44} color="#8B1A1A" />
       </View>
     </TouchableOpacity>
   );
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: "#FF001E",
+    backgroundColor: "#8B1A1A",
     alignSelf: "flex-start",
     paddingHorizontal: 18,
     paddingVertical: 12,

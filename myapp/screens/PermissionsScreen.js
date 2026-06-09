@@ -100,7 +100,7 @@ export default function PermissionsScreen() {
       {/* Location */}
       <View style={styles.card}>
         <View style={styles.iconContainer}>
-          <Feather name="map-pin" size={22} color="#FF001E" />
+          <Feather name="map-pin" size={22} color="#8B1A1A" />
         </View>
 
         <View style={styles.textContainer}>
@@ -119,7 +119,7 @@ export default function PermissionsScreen() {
           onValueChange={requestLocationPermission}
           trackColor={{
             false: "#E5E5E5",
-            true: "#FF001E",
+            true: "#8B1A1A",
           }}
           thumbColor="#ffffff"
         />
@@ -128,7 +128,7 @@ export default function PermissionsScreen() {
       {/* Contacts */}
       <View style={styles.card}>
         <View style={styles.iconContainer}>
-          <Feather name="users" size={22} color="#FF001E" />
+          <Feather name="users" size={22} color="#8B1A1A" />
         </View>
 
         <View style={styles.textContainer}>
@@ -147,7 +147,7 @@ export default function PermissionsScreen() {
           onValueChange={requestContactsPermission}
           trackColor={{
             false: "#E5E5E5",
-            true: "#FF001E",
+            true: "#8B1A1A",
           }}
           thumbColor="#ffffff"
         />
@@ -156,7 +156,7 @@ export default function PermissionsScreen() {
       {/* Notifications */}
       <View style={styles.card}>
         <View style={styles.iconContainer}>
-          <Feather name="bell" size={22} color="#FF001E" />
+          <Feather name="bell" size={22} color="#8B1A1A" />
         </View>
 
         <View style={styles.textContainer}>
@@ -175,7 +175,7 @@ export default function PermissionsScreen() {
           onValueChange={requestNotificationPermission}
           trackColor={{
             false: "#E5E5E5",
-            true: "#FF001E",
+            true: "#8B1A1A",
           }}
           thumbColor="#ffffff"
         />
@@ -183,7 +183,7 @@ export default function PermissionsScreen() {
 
       {/* Info Box */}
       <View style={styles.infoBox}>
-        <Feather name="shield" size={20} color="#FF001E" style={{ marginRight: 10, marginTop: 2 }} />
+        <Feather name="shield" size={20} color="#8B1A1A" style={{ marginRight: 10, marginTop: 2 }} />
         <Text style={styles.infoText}>
           We do not access your photos,
           media or full contact list. Bank SMS
@@ -308,14 +308,14 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: "#FF001E",
+    backgroundColor: "#8B1A1A",
     height: 65,
     borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 28,
 
-    shadowColor: "#FF001E",
+    shadowColor: "#8B1A1A",
     shadowOffset: {
       width: 0,
       height: 10,

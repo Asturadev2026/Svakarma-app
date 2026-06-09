@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
 
   category: {
-    color: "#FF001E",
+    color: "#8B1A1A",
     fontWeight: "700",
     marginBottom: 8,
   },

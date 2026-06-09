@@ -1,0 +1,468 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// legacy/introspected models (Preserved to prevent database schema deletion)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model admin_users {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email         String    @unique @db.VarChar(255)
+  full_name     String    @db.VarChar(255)
+  role          String?   @default("ops") @db.VarChar(30)
+  password_hash String
+  is_active     Boolean?  @default(true)
+  last_login_at DateTime? @db.Timestamptz(6)
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model audit_logs {
+  id          String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  customer_id String?    @db.Uuid
+  actor_id    String?    @db.Uuid
+  actor_type  String?    @db.VarChar(20)
+  action      String     @db.VarChar(100)
+  entity_type String?    @db.VarChar(50)
+  entity_id   String?    @db.Uuid
+  old_value   Json?
+  new_value   Json?
+  ip_address  String?    @db.Inet
+  user_agent  String?
+  created_at  DateTime?  @default(now()) @db.Timestamptz(6)
+  customers   customers? @relation(fields: [customer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([action], map: "idx_audit_action")
+  @@index([customer_id], map: "idx_audit_customer")
+  @@index([entity_type, entity_id], map: "idx_audit_entity")
+}
+
+model customers {
+  id                            String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  mobile                        String              @unique @db.VarChar(15)
+  email                         String?             @db.VarChar(255)
+  full_name                     String?             @db.VarChar(255)
+  date_of_birth                 DateTime?           @db.Date
+  gender                        String?             @db.VarChar(10)
+  address_line1                 String?
+  address_line2                 String?
+  city                          String?             @db.VarChar(100)
+  state                         String?             @db.VarChar(100)
+  pincode                       String?             @db.VarChar(10)
+  business_name                 String?             @db.VarChar(255)
+  business_type                 String?             @db.VarChar(100)
+  business_vintage_months       Int?
+  annual_turnover_inr           BigInt?
+  gst_number                    String?             @db.VarChar(20)
+  pan_number                    String?             @db.VarChar(12)
+  aadhaar_number_hash           String?
+  kyc_status                    String?             @default("pending") @db.VarChar(30)
+  ckyc_id                       String?             @db.VarChar(50)
+  video_kyc_done                Boolean?            @default(false)
+  cibil_score                   Int?
+  cibil_fetched_at              DateTime?           @db.Timestamptz(6)
+  bank_account_number_encrypted String?
+  bank_ifsc                     String?             @db.VarChar(15)
+  bank_name                     String?             @db.VarChar(100)
+  nach_active                   Boolean?            @default(false)
+  nach_mandate_id               String?             @db.VarChar(100)
+  fcm_token                     String?
+  preferred_language            String?             @default("en") @db.VarChar(10)
+  is_active                     Boolean?            @default(true)
+  created_at                    DateTime?           @default(now()) @db.Timestamptz(6)
+  updated_at                    DateTime?           @default(now()) @db.Timestamptz(6)
+  audit_logs                    audit_logs[]
+  documents                     documents[]
+  kyc_verifications             kyc_verifications[]
+  loan_applications             loan_applications[]
+  notifications                 notifications[]
+
+  @@index([gst_number], map: "idx_customers_gst")
+  @@index([mobile], map: "idx_customers_mobile")
+  @@index([pan_number], map: "idx_customers_pan")
+}
+
+model documents {
+  id                  String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  customer_id         String             @db.Uuid
+  loan_id             String?            @db.Uuid
+  doc_type            String             @db.VarChar(50)
+  file_name           String             @db.VarChar(255)
+  file_size_bytes     BigInt?
+  mime_type           String?            @db.VarChar(100)
+  storage_key         String
+  storage_bucket      String?            @db.VarChar(100)
+  checksum_sha256     String?
+  verification_status String?            @default("pending") @db.VarChar(20)
+  verified_by         String?            @db.Uuid
+  verified_at         DateTime?          @db.Timestamptz(6)
+  rejection_reason    String?
+  ocr_data            Json?
+  is_active           Boolean?           @default(true)
+  uploaded_at         DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?          @default(now()) @db.Timestamptz(6)
+  customers           customers          @relation(fields: [customer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  loan_applications   loan_applications? @relation(fields: [loan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([customer_id], map: "idx_docs_customer")
+  @@index([loan_id], map: "idx_docs_loan")
+  @@index([doc_type, verification_status], map: "idx_docs_type")
+}
+
+model kyc_verifications {
+  id               String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  customer_id      String    @db.Uuid
+  kyc_type         String    @db.VarChar(30)
+  status           String?   @default("pending") @db.VarChar(20)
+  provider         String?   @db.VarChar(50)
+  provider_ref_id  String?   @db.VarChar(100)
+  request_payload  Json?
+  response_payload Json?
+  verified_name    String?   @db.VarChar(255)
+  verified_at      DateTime? @db.Timestamptz(6)
+  failure_reason   String?
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+  customers        customers @relation(fields: [customer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([customer_id], map: "idx_kyc_customer")
+  @@index([kyc_type, status], map: "idx_kyc_type_status")
+}
+
+model loan_applications {
+  id                          String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  application_number          String               @unique @db.VarChar(30)
+  customer_id                 String               @db.Uuid
+  product_id                  String               @db.Uuid
+  requested_amount_inr        BigInt
+  requested_tenure_months     Int
+  purpose                     String?
+  sanctioned_amount_inr       BigInt?
+  sanctioned_rate_pct         Decimal?             @db.Decimal(5, 2)
+  sanctioned_tenure_months    Int?
+  processing_fee_inr          BigInt?
+  emi_amount_inr              BigInt?
+  status                      String?              @default("draft") @db.VarChar(30)
+  submitted_at                DateTime?            @db.Timestamptz(6)
+  reviewed_at                 DateTime?            @db.Timestamptz(6)
+  approved_at                 DateTime?            @db.Timestamptz(6)
+  rejected_at                 DateTime?            @db.Timestamptz(6)
+  disbursed_at                DateTime?            @db.Timestamptz(6)
+  closed_at                   DateTime?            @db.Timestamptz(6)
+  rejection_reason            String?
+  underwriter_id              String?              @db.Uuid
+  credit_score_at_application Int?
+  bureau_report_ref           String?              @db.VarChar(100)
+  disbursal_account           String?              @db.VarChar(50)
+  disbursal_ifsc              String?              @db.VarChar(15)
+  disbursal_utr               String?              @db.VarChar(50)
+  ip_address                  String?              @db.Inet
+  device_info                 Json?
+  created_at                  DateTime?            @default(now()) @db.Timestamptz(6)
+  updated_at                  DateTime?            @default(now()) @db.Timestamptz(6)
+  documents                   documents[]
+  customers                   customers            @relation(fields: [customer_id], references: [id], onUpdate: NoAction)
+  loan_products               loan_products        @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  repayment_schedule          repayment_schedule[]
+
+  @@index([customer_id], map: "idx_loanapp_customer")
+  @@index([application_number], map: "idx_loanapp_number")
+  @@index([status], map: "idx_loanapp_status")
+}
+
+model loan_products {
+  id                 String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  code               String              @unique @db.VarChar(30)
+  name               String              @db.VarChar(100)
+  description        String?
+  min_amount_inr     BigInt
+  max_amount_inr     BigInt
+  min_rate_pct       Decimal             @db.Decimal(5, 2)
+  max_rate_pct       Decimal             @db.Decimal(5, 2)
+  min_tenure_months  Int
+  max_tenure_months  Int
+  processing_fee_pct Decimal?            @default(1.0) @db.Decimal(5, 2)
+  is_govt_scheme     Boolean?            @default(false)
+  scheme_details     Json?
+  is_active          Boolean?            @default(true)
+  created_at         DateTime?           @default(now()) @db.Timestamptz(6)
+  loan_applications  loan_applications[]
+}
+
+model notifications {
+  id                  String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  customer_id         String    @db.Uuid
+  channel             String    @db.VarChar(20)
+  template_id         String?   @db.VarChar(50)
+  subject             String?   @db.VarChar(255)
+  body                String
+  status              String?   @default("pending") @db.VarChar(20)
+  provider_message_id String?   @db.VarChar(100)
+  sent_at             DateTime? @db.Timestamptz(6)
+  delivered_at        DateTime? @db.Timestamptz(6)
+  metadata            Json?
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  customers           customers @relation(fields: [customer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([customer_id], map: "idx_notif_customer")
+  @@index([status, channel], map: "idx_notif_status")
+}
+
+model otp_sessions {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  mobile     String    @db.VarChar(15)
+  otp_hash   String
+  purpose    String?   @default("login") @db.VarChar(50)
+  is_used    Boolean?  @default(false)
+  attempts   Int?      @default(0)
+  expires_at DateTime  @db.Timestamptz(6)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([mobile], map: "idx_otp_mobile")
+}
+
+model repayment_schedule {
+  id                  String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  loan_id             String            @db.Uuid
+  installment_number  Int
+  due_date            DateTime          @db.Date
+  principal_inr       BigInt
+  interest_inr        BigInt
+  emi_inr             BigInt
+  opening_balance_inr BigInt
+  closing_balance_inr BigInt
+  status              String?           @default("pending") @db.VarChar(20)
+  paid_amount_inr     BigInt?           @default(0)
+  paid_at             DateTime?         @db.Timestamptz(6)
+  payment_ref         String?           @db.VarChar(100)
+  payment_mode        String?           @db.VarChar(30)
+  late_fee_inr        BigInt?           @default(0)
+  bounce_charge_inr   BigInt?           @default(0)
+  created_at          DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?         @default(now()) @db.Timestamptz(6)
+  loan_applications   loan_applications @relation(fields: [loan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([loan_id, installment_number])
+  @@index([due_date, status], map: "idx_repayment_due")
+  @@index([loan_id], map: "idx_repayment_loan")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Svakarma Mobile New Models
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  ADMIN
+  AGENT
+}
+
+enum LoanStatus {
+  ACTIVE
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+}
+
+model User {
+  id                String            @id @default(uuid())
+  phone             String            @unique
+  name              String?
+  companyName       String?
+  location          String?
+  role              UserRole          @default(USER)
+  profileCompletion Int               @default(0)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  deletedAt         DateTime?
+
+  sessions          Session[]
+  loans             Loan[]
+  applications      LoanApplication[]
+  cibilScores       CibilScore[]
+  businessProfile   BusinessProfile?
+  documents         UserDocument[]
+
+  referralsSent     Referral[]        @relation("ReferralsSent")
+  referralsReceived Referral[]        @relation("ReferralsReceived")
+}
+
+model OTP {
+  id        String   @id @default(uuid())
+  phone     String
+  otp       String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  token      String   @unique
+  deviceInfo String?
+  createdAt  DateTime @default(now())
+}
+
+model Loan {
+  id         String     @id @default(uuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id])
+  loanNumber String     @unique
+  amount     Float
+  status     LoanStatus @default(PENDING)
+  emiDue     Float
+  nextDueDate DateTime
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model LoanApplication {
+  id              String                     @id @default(uuid())
+  userId          String
+  user            User                       @relation(fields: [userId], references: [id])
+  requestedAmount Float
+  purpose         String
+  status          ApplicationStatus          @default(PENDING)
+  notes           String?
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+  statusHistory   ApplicationStatusHistory[]
+
+  @@index([userId], map: "idx_loanapp_user")
+  @@index([status],  map: "idx_loanapp_status_new")
+}
+
+model Referral {
+  id             String         @id @default(uuid())
+  referrerId     String
+  referrer       User           @relation("ReferralsSent", fields: [referrerId], references: [id])
+  referredUserId String?
+  referredUser   User?          @relation("ReferralsReceived", fields: [referredUserId], references: [id])
+  referralCode   String         @unique
+  rewardAmount   Float
+  status         ReferralStatus @default(PENDING)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model CibilScore {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  score     Int
+  reportUrl String?
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Business Profile
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum BusinessType {
+  PROPRIETORSHIP
+  LLP
+  PRIVATE_LIMITED
+}
+
+model BusinessProfile {
+  id              String       @id @default(uuid())
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id])
+
+  businessType    BusinessType
+  businessName    String
+
+  gstNumber       String?
+  panNumber       String?
+  aadhaarNumber   String?
+
+  panVerified     Boolean      @default(false)
+  gstVerified     Boolean      @default(false)
+  aadhaarVerified Boolean      @default(false)
+
+  industry        String?
+  annualTurnover  String?
+  udyamNumber     String?
+
+  addressLine1    String?
+  addressLine2    String?
+  city            String?
+  state           String?
+  pincode         String?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Document Upload
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserDocument {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  docType   String   // PAN_CARD | AADHAAR_CARD | GST_CERTIFICATE | BANK_STATEMENT
+
+  fileUrl   String   // relative path e.g. /uploads/1234567890-file.pdf
+  fileName  String   // original filename from client
+  mimeType  String?  // image/jpeg | image/png | application/pdf
+
+  status    String   @default("pending") // pending | verified | rejected
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId], map: "idx_userdoc_user")
+  @@index([docType], map: "idx_userdoc_type")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AdminUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("ops")   // ops | super
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email], map: "idx_admin_email")
+}
+
+model ApplicationStatusHistory {
+  id            String            @id @default(uuid())
+  applicationId String
+  application   LoanApplication   @relation(fields: [applicationId], references: [id])
+  status        ApplicationStatus
+  notes         String?
+  changedBy     String?           // admin email who performed the action
+  createdAt     DateTime          @default(now())
+
+  @@index([applicationId], map: "idx_app_hist_app")
+}

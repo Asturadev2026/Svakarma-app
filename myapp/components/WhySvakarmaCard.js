@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
 
   statValue: {
-    color: "#FF001E",
+    color: "#8B1A1A",
     fontSize: 28,
     fontWeight: "700",
   },

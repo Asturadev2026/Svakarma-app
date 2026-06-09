@@ -6,7 +6,7 @@ import HomeScreen from "../screens/HomeScreen";
 import LoansScreen from "../screens/LoansScreen";
 import EMICalculatorScreen from "../screens/EMICalculatorScreen";
 
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
 
@@ -36,13 +36,22 @@ export default function MainTabs() {
           fontWeight: "600",
           marginBottom: 8,
         },
-        tabBarActiveTintColor: "#FF001E",
+        tabBarActiveTintColor: "#8B1A1A",
         tabBarInactiveTintColor: "#9CA3AF",
         tabBarIcon: ({ focused, color }) => {
+          if (route.name === "EMI") {
+            return (
+              <MaterialCommunityIcons
+                name="calculator"
+                size={22}
+                color={color}
+                style={{ marginTop: 6 }}
+              />
+            );
+          }
           const icons = {
             Home: "home",
             Loans: "credit-card",
-            EMI: "calculator",
             Profile: "user",
           };
           return (

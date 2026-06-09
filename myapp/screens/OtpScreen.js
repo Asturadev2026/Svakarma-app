@@ -43,7 +43,20 @@ export default function OtpScreen() {
       // Call standard verifyOtp service
       const response = await authService.verifyOtp(mobileNumber || '9999999999', otp);
       if (response.success) {
-        navigation.navigate('Permissions');
+        try {
+          const onboardingRes = await authService.checkOnboarding();
+          if (onboardingRes.success && onboardingRes.onboardingComplete) {
+            // Existing borrower: Go to Permissions -> MainTabs
+            navigation.navigate('Permissions');
+          } else {
+            // New borrower: Go to Onboarding select type screen
+            navigation.navigate('OnboardingSelectType');
+          }
+        } catch (onbError) {
+          console.log('[ONBOARDING_CHECK_ERROR]', onbError);
+          // Fallback to Permissions
+          navigation.navigate('Permissions');
+        }
       } else {
         Alert.alert('Verification Failed', response.message || 'Invalid OTP code. Please try again.');
       }

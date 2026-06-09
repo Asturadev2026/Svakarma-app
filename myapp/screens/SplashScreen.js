@@ -112,13 +112,13 @@ const styles = StyleSheet.create({
 
   button: {
     width: "100%",
-    backgroundColor: "#FF001E",
+    backgroundColor: "#8B1A1A",
     paddingVertical: 18,
     borderRadius: 18,
     alignItems: "center",
     marginBottom: 18,
 
-    shadowColor: "#FF001E",
+    shadowColor: "#8B1A1A",
     shadowOffset: {
       width: 0,
       height: 8,

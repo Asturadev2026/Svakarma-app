@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function QuickActions() {
   const navigation = useNavigation();
@@ -53,22 +53,15 @@ export default function QuickActions() {
     },
 
     {
-      label: "Pay EMI",
-      icon: "credit-card",
-      screen: "MainTabs",
-      params: { screen: "EMI" },
+      label: "Biz Profile",
+      icon: "briefcase",
+      screen: "OnboardingSelectType",
     },
 
     {
-      label: "Help",
-      icon: "help-circle",
-      onPress: () => {
-        Alert.alert(
-          "Customer Support",
-          "We are here to help you! Reach out to us via:\n\n📞 Toll Free: 1800-123-4567\n✉️ Email: support@svakarma.com",
-          [{ text: "OK" }]
-        );
-      },
+      label: "Upload Docs",
+      icon: "upload",
+      screen: "OnboardingDocumentUpload",
     },
   ];
 
@@ -94,7 +87,11 @@ export default function QuickActions() {
           onPress={() => handlePress(item)}
         >
           <View style={styles.iconBox}>
-            <Feather name={item.icon} size={24} color="#FF001E" />
+            {item.icon === "calculator" ? (
+              <MaterialCommunityIcons name="calculator" size={24} color="#8B1A1A" />
+            ) : (
+              <Feather name={item.icon} size={24} color="#8B1A1A" />
+            )}
           </View>
 
           <Text style={styles.label}>

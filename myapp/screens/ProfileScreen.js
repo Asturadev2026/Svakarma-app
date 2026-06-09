@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import {
   View,
@@ -6,57 +6,100 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, Feather } from "@expo/vector-icons";
+import api from "../services/api";
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
+
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get('/profile');
+        if (response.success) {
+          setProfileData(response.data);
+        }
+      } catch (err) {
+        console.warn('[PROFILE] Failed to fetch profile:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const personal = profileData?.personalDetails;
+  const business = profileData?.businessDetails;
+  const kyc = profileData?.kycStatus;
+
+  // Derive completion percentage from kycStatus
+  const completionPct = kyc?.completionPercentage ?? 0;
+
+  // Derive whether business info is complete
+  const businessComplete = !!(business?.businessName);
+
   const sections = [
     {
       title: "Personal details",
-      fields: "5 fields completed",
-      completed: true,
+      fields: personal?.fullName && personal.fullName !== 'Complete Your Profile'
+        ? "Name on file"
+        : "Pending",
+      completed: !!(personal?.fullName && personal.fullName !== 'Complete Your Profile'),
       icon: "user",
+      onPress: () => navigation.navigate("EditPersonalDetails"),
     },
-
     {
       title: "Business info",
-      fields: "7 fields completed",
-      completed: true,
+      fields: businessComplete ? business.businessName : "Not set",
+      completed: businessComplete,
       icon: "briefcase",
+      onPress: () => navigation.navigate("OnboardingSelectType"),
     },
-
     {
       title: "KYC documents",
-      fields: "4 fields completed",
-      completed: true,
+      fields: (kyc?.panVerified && kyc?.aadhaarVerified) ? "Verified" : "Pending verification",
+      completed: !!(kyc?.panVerified && kyc?.aadhaarVerified),
       icon: "shield",
+      onPress: () => navigation.navigate("OnboardingDocumentUpload"),
     },
-
     {
       title: "Financial profile",
-      fields: "3 fields completed",
-      completed: true,
+      fields: business?.annualTurnover ? business.annualTurnover : "Pending",
+      completed: !!(business?.annualTurnover),
       icon: "trending-up",
     },
-
     {
       title: "Address proof",
-      fields: "2 fields pending",
-      completed: false,
+      fields: business?.city ? `${business.city}, ${business.state ?? ''}` : "Pending",
+      completed: !!(business?.city),
       icon: "map-pin",
     },
-
-    {
-      title: "References",
-      fields: "2 fields pending",
-      completed: false,
-      icon: "users",
-    },
   ];
+
+  const infoRows = [
+    ["PAN",         personal?.pan ?? "—"],
+    ["Aadhaar",     personal?.aadhaar ?? "—"],
+    ["Udyam ID",    business?.udyamId ?? "—"],
+    ["GSTIN",       business?.gstin ?? "—"],
+    ["Mobile",      personal?.mobile ? `+91 ${personal.mobile}` : "—"],
+    ["Business",    business?.businessName ?? "—"],
+  ];
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#8B1A1A" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -75,7 +118,7 @@ export default function ProfileScreen() {
           </Text>
 
           <TouchableOpacity style={styles.editButton}>
-            <Feather name="edit-2" size={18} color="#FF001E" />
+            <Feather name="edit-2" size={18} color="#8B1A1A" />
           </TouchableOpacity>
         </View>
 
@@ -86,11 +129,11 @@ export default function ProfileScreen() {
           </Text>
 
           <Text style={styles.completionPercentage}>
-            85%
+            {completionPct}%
           </Text>
 
           <Text style={styles.completionText}>
-            Complete 2 more sections to unlock
+            {completionPct >= 100 ? 'Profile complete!' : 'Complete your profile to unlock better rates'}
           </Text>
 
           <Text style={styles.completionSubtext}>
@@ -98,7 +141,7 @@ export default function ProfileScreen() {
           </Text>
 
           <View style={styles.progressBackground}>
-            <View style={styles.progressFill} />
+            <View style={[styles.progressFill, { width: `${completionPct}%` }]} />
           </View>
         </View>
 
@@ -109,7 +152,7 @@ export default function ProfileScreen() {
 
         {/* Profile Cards */}
         {sections.map((item, index) => {
-          const iconColor = item.completed ? "#16A34A" : "#FF001E";
+          const iconColor = item.completed ? "#16A34A" : "#8B1A1A";
           const iconBg = item.completed ? "#EEF7F0" : "#FFF5F5";
           
           return (
@@ -120,6 +163,7 @@ export default function ProfileScreen() {
                 !item.completed && styles.pendingCard,
               ]}
               activeOpacity={0.85}
+              onPress={() => item.onPress && item.onPress()}
             >
               <View style={styles.leftRow}>
                 <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
@@ -156,20 +200,13 @@ export default function ProfileScreen() {
         </Text>
 
         <View style={styles.infoCard}>
-          {[
-            ["PAN", "ABCDE1234F"],
-            ["Aadhaar", "XXXX XXXX 4527"],
-            ["Udyam ID", "UDYAM-MH-18-0034521"],
-            ["GSTIN", "27ABCDE1234F1Z5"],
-            ["Email", "rajesh.mehta@mehtaent.in"],
-            ["Mobile", "+91 98765 43210"],
-          ].map((item, index) => (
+          {infoRows.map((item, index) => (
             <View
               key={index}
               style={[
                 styles.infoRow,
 
-                index === 5 && {
+                index === infoRows.length - 1 && {
                   borderBottomWidth: 0,
                 },
               ]}
@@ -237,12 +274,12 @@ const styles = StyleSheet.create({
   },
 
   editIcon: {
-    color: "#FF001E",
+    color: "#8B1A1A",
     fontSize: 20,
   },
 
   completionCard: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
     borderRadius: 28,
     padding: 26,
     marginBottom: 28,
@@ -353,7 +390,7 @@ const styles = StyleSheet.create({
   },
 
   completeBadge: {
-    backgroundColor: "#FF001E",
+    backgroundColor: "#8B1A1A",
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 14,

@@ -43,7 +43,7 @@ export default function ApplicationStatusScreen({ navigation }) {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#E60012" />
+        <ActivityIndicator size="large" color="#8B1A1A" />
         <Text style={styles.loadingText}>Fetching your application details...</Text>
       </SafeAreaView>
     );
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   lineCompleted: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
   },
   linePending: {
     backgroundColor: "#E5E7EB",
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     marginRight: 18,
   },
   dotCompleted: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
   },
   dotPending: {
     backgroundColor: "#FFFFFF",
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   applyBtn: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 16,

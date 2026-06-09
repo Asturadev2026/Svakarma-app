@@ -6,6 +6,9 @@ import SplashScreen from "./screens/SplashScreen";
 import LoginScreen from "./screens/LoginScreen";
 import OtpScreen from "./screens/OtpScreen";
 import PermissionsScreen from "./screens/PermissionsScreen";
+import OnboardingSelectTypeScreen from "./screens/OnboardingSelectTypeScreen";
+import OnboardingBusinessDetailsScreen from "./screens/OnboardingBusinessDetailsScreen";
+import OnboardingDocumentUploadScreen from "./screens/OnboardingDocumentUploadScreen";
 
 
 import MainTabs from "./navigation/MainTabs";
@@ -14,6 +17,7 @@ import CibilScreen from "./screens/CibilScreen";
 import EMICalculatorScreen from "./screens/EMICalculatorScreen";
 import ApplicationStatusScreen from "./screens/ApplicationStatusScreen";
 import ReferScreen from "./screens/ReferScreen";
+import PersonalDetailsScreen from "./screens/PersonalDetailsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -47,6 +51,21 @@ export default function App() {
         />
 
         <Stack.Screen
+          name="OnboardingSelectType"
+          component={OnboardingSelectTypeScreen}
+        />
+
+        <Stack.Screen
+          name="OnboardingBusinessDetails"
+          component={OnboardingBusinessDetailsScreen}
+        />
+
+        <Stack.Screen
+          name="OnboardingDocumentUpload"
+          component={OnboardingDocumentUploadScreen}
+        />
+
+        <Stack.Screen
           name="MainTabs"
           component={MainTabs}
         />
@@ -67,6 +86,11 @@ export default function App() {
         <Stack.Screen
           name="Refer"
           component={ReferScreen}
+        />
+
+        <Stack.Screen
+          name="EditPersonalDetails"
+          component={PersonalDetailsScreen}
         />
 
         <Stack.Screen

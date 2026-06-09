@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: "#FF001E",
+    backgroundColor: "#8B1A1A",
     alignSelf: "flex-start",
     paddingHorizontal: 18,
     paddingVertical: 12,

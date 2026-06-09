@@ -3,17 +3,20 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { config } from 'dotenv';
-
-// Load environment variables
-config();
+import path from 'path';
+import './config/env'; // Validate environment variables early
+import prisma from './shared/prisma';
 
 // Module Routes
 import authRoutes from './modules/auth/auth.routes';
 import cibilRoutes from './modules/cibil/cibil.routes';
 import loanRoutes from './modules/loans/loan.routes';
-import referralRoutes from './modules/referrals/referral.routes';
-import profileRoutes from './modules/profile/profile.routes';
+import referralRoutes from './modules/referral/referral.routes';
+import userRoutes from './modules/user/user.routes';
+import businessRoutes from './modules/profile/business.routes';
+import documentRoutes from './modules/documents/document.routes';
+import adminRoutes from './modules/admin/admin.routes';
+import { adminService } from './modules/admin/admin.service';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,9 +28,31 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded files statically — accessible at /uploads/<filename>
+const uploadsDir = path.join(__dirname, '../uploads');
+app.use('/uploads', express.static(uploadsDir));
+
 // Health Check
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'svakarma-mobile-backend' });
+app.get('/health', async (_req, res) => {
+  try {
+    // Run simple query to test DB connectivity
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      status: 'ok',
+      database: 'connected',
+      timestamp: new Date().toISOString(),
+      service: 'svakarma-mobile-backend',
+    });
+  } catch (error: any) {
+    console.error('Database connection failed in health check:', error);
+    res.status(500).json({
+      status: 'error',
+      database: 'disconnected',
+      error: error.message || 'Connection failed',
+      timestamp: new Date().toISOString(),
+      service: 'svakarma-mobile-backend',
+    });
+  }
 });
 
 // API Routes
@@ -35,7 +60,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cibil', cibilRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/referrals', referralRoutes);
-app.use('/api/profile', profileRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/admin', adminRoutes);
+// Mount /api/profile/business BEFORE /api/profile to prevent prefix conflict
+app.use('/api/profile/business', businessRoutes);
+app.use('/api/profile', userRoutes);
+
 
 // 404 Route handler
 app.use((_req, res) => {
@@ -56,9 +86,10 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 // Start Server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Svakarma Backend running at http://localhost:${PORT}`);
   console.log(`📊 Health Check: http://localhost:${PORT}/health`);
+  await adminService.ensureDefaultAdmin();
 });
 
 export default app;

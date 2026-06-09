@@ -145,7 +145,7 @@ export default function ReferScreen() {
         {/* Banner */}
         <View style={styles.banner}>
           <View style={styles.giftIconContainer}>
-            <Feather name="gift" size={36} color="#FF001E" />
+            <Feather name="gift" size={36} color="#8B1A1A" />
           </View>
 
           <Text style={styles.bannerLabel}>
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   },
 
   bannerLabel: {
-    color: "#FF001E",
+    color: "#8B1A1A",
     fontWeight: "700",
     marginTop: 14,
     letterSpacing: 1,
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
 
   statValue: {
-    color: "#FF001E",
+    color: "#8B1A1A",
     fontSize: 30,
     fontWeight: "700",
   },
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   codeContainer: {
     borderWidth: 1.5,
     borderStyle: "dashed",
-    borderColor: "#FF001E",
+    borderColor: "#8B1A1A",
     borderRadius: 18,
     padding: 16,
 
@@ -429,13 +429,13 @@ const styles = StyleSheet.create({
   },
 
   code: {
-    color: "#FF001E",
+    color: "#8B1A1A",
     fontSize: 34,
     fontWeight: "700",
   },
 
   copyButton: {
-    backgroundColor: "#FF001E",
+    backgroundColor: "#8B1A1A",
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 14,
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: "#FF001E",
+    backgroundColor: "#8B1A1A",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 18,

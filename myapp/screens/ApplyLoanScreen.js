@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   stepCircleActive: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
   },
   stepCircleInactive: {
     backgroundColor: "#F0F0F0",
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   stepLabelActive: {
-    color: "#E60012",
+    color: "#8B1A1A",
     fontWeight: "700",
     fontSize: 12,
   },
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   mandatory: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#E60012",
+    color: "#8B1A1A",
     marginLeft: 4,
     marginTop: -2,
   },
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   tenureButtonActive: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
   },
   tenureText: {
     color: "#374151",
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#EEEEEE",
   },
   primaryButton: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",

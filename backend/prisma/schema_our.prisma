@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  AGENT
+}
+
+enum LoanStatus {
+  ACTIVE
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+}
+
+model User {
+  id                String            @id @default(uuid())
+  phone             String            @unique
+  name              String?
+  companyName       String?
+  location          String?
+  role              UserRole          @default(USER)
+  profileCompletion Int               @default(0)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  deletedAt         DateTime?
+  
+  sessions          Session[]
+  loans             Loan[]
+  applications      LoanApplication[]
+  cibilScores       CibilScore[]
+  
+  referralsSent     Referral[]        @relation("ReferralsSent")
+  referralsReceived Referral[]        @relation("ReferralsReceived")
+}
+
+model OTP {
+  id        String   @id @default(uuid())
+  phone     String
+  otp       String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  token      String   @unique
+  deviceInfo String?
+  createdAt  DateTime @default(now())
+}
+
+model Loan {
+  id         String     @id @default(uuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id])
+  loanNumber String     @unique
+  amount     Float
+  status     LoanStatus @default(PENDING)
+  emiDue     Float
+  nextDueDate DateTime
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model LoanApplication {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  requestedAmount Float
+  purpose         String
+  status          ApplicationStatus @default(PENDING)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Referral {
+  id             String         @id @default(uuid())
+  referrerId     String
+  referrer       User           @relation("ReferralsSent", fields: [referrerId], references: [id])
+  referredUserId String?
+  referredUser   User?          @relation("ReferralsReceived", fields: [referredUserId], references: [id])
+  referralCode   String         @unique
+  rewardAmount   Float
+  status         ReferralStatus @default(PENDING)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model CibilScore {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  score     Int
+  reportUrl String?
+  createdAt DateTime @default(now())
+}

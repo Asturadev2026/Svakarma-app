@@ -261,11 +261,11 @@ const styles = StyleSheet.create({
   pageSubtitle: { fontSize: 14, color: "#6B7280", marginTop: 4, marginBottom: 24 },
 
   resultCard: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
     borderRadius: 28,
     padding: 24,
     marginBottom: 20,
-    shadowColor: "#E60012",
+    shadowColor: "#8B1A1A",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
     shadowRadius: 20,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   controlLabel: { fontSize: 15, fontWeight: "600", color: "#374151" },
-  controlValueText: { fontSize: 16, fontWeight: "700", color: "#E60012" },
+  controlValueText: { fontSize: 16, fontWeight: "700", color: "#8B1A1A" },
   controlDivider: { height: 1, backgroundColor: "#F3F4F6", marginVertical: 16 },
 
   stepperRow: { flexDirection: "row", gap: 6, alignItems: "center" },
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
   },
   stepBtnAdd: { backgroundColor: "#FEF2F2" },
   stepBtnText: { fontSize: 12, fontWeight: "700", color: "#374151" },
-  stepBtnAddText: { color: "#E60012" },
+  stepBtnAddText: { color: "#8B1A1A" },
   stepSpacer: { width: 8 },
 
   tenureChips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
     borderRadius: 12,
   },
-  chipActive: { backgroundColor: "#E60012" },
+  chipActive: { backgroundColor: "#8B1A1A" },
   chipText: { fontSize: 13, fontWeight: "700", color: "#374151" },
   chipTextActive: { color: "#FFFFFF" },
 
@@ -372,11 +372,11 @@ const styles = StyleSheet.create({
   tipText: { fontSize: 13, color: "#78350F", lineHeight: 20 },
 
   applyBtn: {
-    backgroundColor: "#E60012",
+    backgroundColor: "#8B1A1A",
     borderRadius: 20,
     paddingVertical: 18,
     alignItems: "center",
-    shadowColor: "#E60012",
+    shadowColor: "#8B1A1A",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
     shadowRadius: 16,

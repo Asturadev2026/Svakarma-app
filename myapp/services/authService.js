@@ -37,6 +37,13 @@ export const authService = {
   },
 
   /**
+   * Check whether the user has completed onboarding (Business Profile exists)
+   */
+  async checkOnboarding() {
+    return api.get('/profile/check-onboarding');
+  },
+
+  /**
    * Terminate active user session
    */
   async logout() {

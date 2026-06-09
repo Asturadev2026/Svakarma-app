@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   },
 
   buttonActive: {
-    backgroundColor: "#FF001E",
+    backgroundColor: "#8B1A1A",
   },
 
   buttonText: {
