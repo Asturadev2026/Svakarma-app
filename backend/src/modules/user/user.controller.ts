@@ -31,6 +31,17 @@ export class UserController {
     }
   }
 
+  async saveReferences(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId!;
+      const { references } = req.body;
+      const data = await userService.saveReferences(userId, references);
+      return res.json({ success: true, message: 'References saved.', data });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async checkOnboarding(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId!;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -22,27 +22,44 @@ const BUSINESS_TYPE_LABELS = {
   PRIVATE_LIMITED: 'Private Limited',
 };
 
+// Government ID formats
+const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;                                   // ABCDE1234F
+const AADHAAR_RE = /^[0-9]{12}$/;                                           // 12 digits
+const GST_RE = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/;         // 15-char GSTIN
+const PIN_RE = /^[0-9]{6}$/;                                               // 6 digits
+const UDYAM_RE = /^UDYAM-[A-Z]{2}-[0-9]{2}-[0-9]{7}$/;                     // UDYAM-MH-18-0034521
+
+// transform: 'upper' uppercases, 'digits' strips non-digits.
+// validate: returns an error string for a NON-EMPTY value, or null if ok.
 const FIELDS = [
-  { key: 'businessName',   label: 'Business Name',    placeholder: 'e.g. Alpha Ventures',        required: true,  keyboardType: 'default' },
-  { key: 'gstNumber',      label: 'GSTIN',             placeholder: 'e.g. 27ABCDE1234F1Z5',          required: false, keyboardType: 'default' },
-  { key: 'panNumber',      label: 'PAN Number',        placeholder: 'e.g. ABCDE1234F',               required: false, keyboardType: 'default' },
-  { key: 'aadhaarNumber',  label: 'Aadhaar Number',    placeholder: '12-digit Aadhaar',              required: false, keyboardType: 'numeric' },
-  { key: 'industry',       label: 'Industry / Sector', placeholder: 'e.g. CNC & Tooling Units',      required: false, keyboardType: 'default' },
-  { key: 'annualTurnover', label: 'Annual Turnover',   placeholder: 'e.g. ₹45,00,000',               required: false, keyboardType: 'default' },
-  { key: 'udyamNumber',    label: 'Udyam Number',      placeholder: 'e.g. UDYAM-MH-18-0034521',      required: false, keyboardType: 'default' },
-  { key: 'addressLine1',   label: 'Address Line 1',    placeholder: 'Street / Building',             required: false, keyboardType: 'default' },
-  { key: 'addressLine2',   label: 'Address Line 2',    placeholder: 'Area / Landmark (optional)',    required: false, keyboardType: 'default' },
-  { key: 'city',           label: 'City',              placeholder: 'e.g. Pune',                    required: false, keyboardType: 'default' },
-  { key: 'state',          label: 'State',             placeholder: 'e.g. Maharashtra',             required: false, keyboardType: 'default' },
-  { key: 'pincode',        label: 'Pincode',           placeholder: 'e.g. 411001',                  required: false, keyboardType: 'numeric' },
+  { key: 'businessName',   label: 'Business Name',    placeholder: 'e.g. Alpha Ventures',        required: true,  keyboardType: 'default', autoCap: 'words' },
+  { key: 'gstNumber',      label: 'GSTIN',             placeholder: 'e.g. 27ABCDE1234F1Z5',         required: false, keyboardType: 'default', autoCap: 'characters', transform: 'upper', maxLength: 15,
+    validate: (v) => GST_RE.test(v) ? null : 'GSTIN must be 15 characters (e.g. 27ABCDE1234F1Z5).' },
+  { key: 'panNumber',      label: 'PAN Number',        placeholder: 'e.g. ABCDE1234F',              required: false, keyboardType: 'default', autoCap: 'characters', transform: 'upper', maxLength: 10,
+    validate: (v) => PAN_RE.test(v) ? null : 'PAN must be 10 characters (e.g. ABCDE1234F).' },
+  { key: 'aadhaarNumber',  label: 'Aadhaar Number',    placeholder: '12-digit Aadhaar',             required: false, keyboardType: 'numeric', transform: 'digits', maxLength: 12,
+    validate: (v) => AADHAAR_RE.test(v) ? null : 'Aadhaar must be exactly 12 digits.' },
+  { key: 'industry',       label: 'Industry / Sector', placeholder: 'e.g. CNC & Tooling Units',     required: false, keyboardType: 'default', autoCap: 'words' },
+  { key: 'annualTurnover', label: 'Annual Turnover',   placeholder: 'e.g. 4500000',                 required: false, keyboardType: 'numeric', transform: 'digits', maxLength: 12 },
+  { key: 'udyamNumber',    label: 'Udyam Number',      placeholder: 'e.g. UDYAM-MH-18-0034521',     required: false, keyboardType: 'default', autoCap: 'characters', transform: 'upper', maxLength: 19,
+    validate: (v) => UDYAM_RE.test(v) ? null : 'Format: UDYAM-XX-00-0000000.' },
+  { key: 'addressLine1',   label: 'Address Line 1',    placeholder: 'Street / Building',            required: false, keyboardType: 'default', autoCap: 'words' },
+  { key: 'addressLine2',   label: 'Address Line 2',    placeholder: 'Area / Landmark (optional)',   required: false, keyboardType: 'default', autoCap: 'words' },
+  { key: 'city',           label: 'City',              placeholder: 'e.g. Pune',                    required: false, keyboardType: 'default', autoCap: 'words' },
+  { key: 'state',          label: 'State',             placeholder: 'e.g. Maharashtra',             required: false, keyboardType: 'default', autoCap: 'words' },
+  { key: 'pincode',        label: 'Pincode',           placeholder: 'e.g. 411001',                  required: false, keyboardType: 'numeric', transform: 'digits', maxLength: 6,
+    validate: (v) => PIN_RE.test(v) ? null : 'Pincode must be 6 digits.' },
 ];
 
 export default function OnboardingBusinessDetailsScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { businessType } = route.params || {};
+  const { businessType: routeBusinessType } = route.params || {};
 
   const [loading, setLoading] = useState(false);
+  // Business type comes from the type-picker (new onboarding) OR from the saved
+  // profile (when editing from the Profile screen).
+  const [businessType, setBusinessType] = useState(routeBusinessType || null);
   const [form, setForm] = useState({
     businessName: '',
     gstNumber: '',
@@ -57,14 +74,83 @@ export default function OnboardingBusinessDetailsScreen() {
     state: '',
     pincode: '',
   });
+  const [errors, setErrors] = useState({});
+
+  const FIELD_BY_KEY = React.useMemo(() => Object.fromEntries(FIELDS.map((f) => [f.key, f])), []);
+
+  // Preload any existing business profile so this screen works for EDITING
+  // (e.g. opened from the Profile screen's Financial / Address sections), not
+  // just first-time onboarding.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await businessService.getBusinessProfile();
+        const p = res?.data;
+        if (!active || !p) return;
+        setForm((prev) => ({
+          ...prev,
+          businessName: p.businessName ?? prev.businessName,
+          gstNumber: p.gstNumber ?? '',
+          panNumber: p.panNumber ?? '',
+          aadhaarNumber: p.aadhaarNumber ?? '',
+          industry: p.industry ?? '',
+          annualTurnover: p.annualTurnover ?? '',
+          udyamNumber: p.udyamNumber ?? '',
+          addressLine1: p.address?.line1 ?? '',
+          addressLine2: p.address?.line2 ?? '',
+          city: p.address?.city ?? '',
+          state: p.address?.state ?? '',
+          pincode: p.address?.pincode ?? '',
+        }));
+        // Keep the type chosen at onboarding; otherwise use the saved one.
+        if (!routeBusinessType && p.businessType) setBusinessType(p.businessType);
+      } catch (err) {
+        console.warn('[BUSINESS_PRELOAD] could not load profile:', err.message);
+      }
+    })();
+    return () => { active = false; };
+  }, [routeBusinessType]);
 
   const handleChange = (key, value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    const f = FIELD_BY_KEY[key];
+    let v = value;
+    if (f?.transform === 'upper') v = v.toUpperCase();
+    else if (f?.transform === 'digits') v = v.replace(/[^0-9]/g, '');
+    if (f?.maxLength) v = v.slice(0, f.maxLength);
+    setForm((prev) => ({ ...prev, [key]: v }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
+  };
+
+  // Validate every field with a validator that has a non-empty value.
+  const validateAll = () => {
+    const next = {};
+    for (const f of FIELDS) {
+      if (!f.validate) continue;
+      const val = (form[f.key] || '').trim();
+      if (!val) continue; // optional — only validate when filled
+      const err = f.validate(val);
+      if (err) next[f.key] = err;
+    }
+    setErrors(next);
+    return next;
   };
 
   const handleSubmit = async () => {
     if (!form.businessName.trim()) {
       Alert.alert('Required', 'Business name is required to continue.');
+      return;
+    }
+    if (!businessType) {
+      Alert.alert('Required', 'Please select your business type first.');
+      navigation.navigate('OnboardingSelectType');
+      return;
+    }
+
+    const fieldErrors = validateAll();
+    const firstError = Object.values(fieldErrors)[0];
+    if (firstError) {
+      Alert.alert('Check your details', firstError);
       return;
     }
 
@@ -146,14 +232,16 @@ export default function OnboardingBusinessDetailsScreen() {
                   {field.required && <Text style={styles.required}> *</Text>}
                 </Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, errors[field.key] && styles.inputError]}
                   placeholder={field.placeholder}
                   placeholderTextColor="#B0B0B0"
                   keyboardType={field.keyboardType}
                   value={form[field.key]}
                   onChangeText={(val) => handleChange(field.key, val)}
-                  autoCapitalize={field.keyboardType === 'default' ? 'words' : 'none'}
+                  autoCapitalize={field.autoCap || (field.keyboardType === 'default' ? 'words' : 'none')}
+                  maxLength={field.maxLength}
                 />
+                {errors[field.key] && <Text style={styles.errorText}>{errors[field.key]}</Text>}
                 {/* Divider between fields but not after last */}
                 {index < FIELDS.length - 1 && <View style={styles.divider} />}
               </View>
@@ -265,6 +353,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#111827',
     paddingVertical: 8,
+  },
+  inputError: {
+    color: '#B91C1C',
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '500',
   },
   divider: {
     height: 1,

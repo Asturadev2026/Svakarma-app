@@ -35,6 +35,11 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
   },
+  "//integrations": "razorpay + twilio are only needed for LIVE mode. The mock providers run without them. Install when going live: npm install twilio razorpay",
+  "optionalDependencies": {
+    "razorpay": "^2.9.4",
+    "twilio": "^5.3.0"
+  },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   }

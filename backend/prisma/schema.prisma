@@ -284,6 +284,7 @@ model User {
   id                String            @id @default(uuid())
   phone             String            @unique
   name              String?
+  email             String?
   companyName       String?
   location          String?
   role              UserRole          @default(USER)
@@ -298,6 +299,8 @@ model User {
   cibilScores       CibilScore[]
   businessProfile   BusinessProfile?
   documents         UserDocument[]
+  payments          Payment[]
+  verificationSources VerificationSource[]
 
   referralsSent     Referral[]        @relation("ReferralsSent")
   referralsReceived Referral[]        @relation("ReferralsReceived")
@@ -332,6 +335,30 @@ model Loan {
   nextDueDate DateTime
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
+  payments   Payment[]
+}
+
+// EMI payments processed through the payment gateway (Razorpay-shaped).
+// `amount` is stored in paise (smallest currency unit), matching the gateway.
+model Payment {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  loanId     String
+  loan       Loan      @relation(fields: [loanId], references: [id])
+  orderId    String    @unique
+  paymentId  String?
+  signature  String?
+  amount     Int
+  currency   String    @default("INR")
+  status     String    @default("created") // created | paid | failed
+  provider   String    @default("mock")     // mock | razorpay
+  createdAt  DateTime  @default(now())
+  paidAt     DateTime?
+
+  @@index([userId], map: "idx_payment_user")
+  @@index([loanId], map: "idx_payment_loan")
+  @@index([status], map: "idx_payment_status")
 }
 
 model LoanApplication {
@@ -346,8 +373,114 @@ model LoanApplication {
   updatedAt       DateTime                   @updatedAt
   statusHistory   ApplicationStatusHistory[]
 
+  // ── Origination journey ──
+  productKey      String?                    // catalog key e.g. "samridhi"
+  tenorMonths     Int?
+  interestRate    Float?                     // requested/indicative annual %
+  // Journey stage: draft | verifying | underwriting | offer | references | bank | esign | disbursed | rejected
+  stage           String                     @default("draft")
+  // Offer produced by the underwriting engine
+  offerAmount     Float?
+  offerRate       Float?
+  offerTenorMonths Int?
+  offerEmi        Float?
+  offerApr        Float?
+  offerExpiresAt  DateTime?
+
+  // ── Agreement / e-Sign ──
+  esignStatus     String?                    // pending | signed
+  signedAt        DateTime?
+  coolingOffEndsAt DateTime?
+
+  verifications   VerificationSource[]
+  references      Reference[]
+  bankAccount     BankAccount?
+  disbursement    Disbursement?
+
   @@index([userId], map: "idx_loanapp_user")
   @@index([status],  map: "idx_loanapp_status_new")
+}
+
+// Reference / guarantor captured during the application.
+model Reference {
+  id            String          @id @default(uuid())
+  userId        String
+  applicationId String
+  application   LoanApplication @relation(fields: [applicationId], references: [id])
+  name          String
+  phone         String
+  relationship  String          // Supplier | Customer | Friend | Family | Guarantor
+  isGuarantor   Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+
+  @@index([applicationId], map: "idx_reference_app")
+}
+
+// Disbursal bank account. Only the last 4 digits are stored after the
+// ₹1 penny-drop verification — never the full number.
+model BankAccount {
+  id                String          @id @default(uuid())
+  userId            String
+  applicationId     String          @unique
+  application       LoanApplication @relation(fields: [applicationId], references: [id])
+  accountLast4      String
+  ifsc              String
+  accountName       String?
+  verified          Boolean         @default(false)
+  pennyDropRef      String?
+  nachMandateId     String?
+  nachStatus        String?         // pending | active
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+// Final disbursement record.
+model Disbursement {
+  id            String          @id @default(uuid())
+  userId        String
+  applicationId String          @unique
+  application   LoanApplication @relation(fields: [applicationId], references: [id])
+  loanId        String?
+  amount        Float
+  accountLast4  String
+  utr           String
+  disbursedAt   DateTime        @default(now())
+  firstEmiDate  DateTime
+}
+
+// One row per data source pulled during AI verification (PAN, Aadhaar, GST, …).
+// In demo mode the provider is "mock"; switching to a real KYC vendor only
+// changes the provider behind the same record + endpoints.
+model VerificationSource {
+  id            String           @id @default(uuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id])
+  applicationId String?
+  application   LoanApplication? @relation(fields: [applicationId], references: [id])
+
+  sourceType    String           // PAN | AADHAAR | UDYAM | GST | CIBIL | BANK_AA | PENNY_DROP
+  provider      String           // e.g. "mock", "karza", "digilocker"
+  status        String           @default("pending") // pending | connected | verified | failed
+  referenceId   String?
+  data          Json?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([applicationId, sourceType])
+  @@index([userId], map: "idx_verif_user")
+  @@index([applicationId], map: "idx_verif_app")
+}
+
+// Profile-level references (independent of any loan application).
+model UserReference {
+  id           String   @id @default(uuid())
+  userId       String
+  name         String
+  phone        String
+  relationship String   // Supplier | Customer | Friend | Family
+  createdAt    DateTime @default(now())
+
+  @@index([userId], map: "idx_userref_user")
 }
 
 model Referral {

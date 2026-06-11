@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -67,6 +67,38 @@ export default function OnboardingDocumentUploadScreen() {
   const [docStates, setDocStates] = useState(
     Object.fromEntries(DOC_TYPES.map((d) => [d.type, { file: null, status: 'idle' }])),
   );
+  const [hydrating, setHydrating] = useState(true);
+
+  // ─── Hydrate from server ─────────────────────────────────────────────────
+  // Load already-uploaded documents so revisiting this screen reflects reality
+  // instead of resetting everything to "Not Uploaded".
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await documentService.getDocuments();
+        const docs = res?.data || [];
+        if (!active || docs.length === 0) return;
+        setDocStates((prev) => {
+          const next = { ...prev };
+          for (const doc of docs) {
+            if (next[doc.docType]) {
+              next[doc.docType] = {
+                file: { name: doc.fileName || 'Uploaded document' },
+                status: 'uploaded',
+              };
+            }
+          }
+          return next;
+        });
+      } catch (err) {
+        console.warn('[DOC_HYDRATE] could not load existing documents:', err.message);
+      } finally {
+        if (active) setHydrating(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
   function updateDoc(type, patch) {
@@ -165,8 +197,17 @@ export default function OnboardingDocumentUploadScreen() {
         {/* Progress row */}
         <View style={styles.progressRow}>
           <View style={styles.progressPill}>
-            <Feather name="check-circle" size={14} color="#8B1A1A" />
-            <Text style={styles.progressText}>{uploadedCount} of {DOC_TYPES.length} uploaded</Text>
+            {hydrating ? (
+              <>
+                <ActivityIndicator size="small" color="#8B1A1A" />
+                <Text style={styles.progressText}>Checking your documents…</Text>
+              </>
+            ) : (
+              <>
+                <Feather name="check-circle" size={14} color="#8B1A1A" />
+                <Text style={styles.progressText}>{uploadedCount} of {DOC_TYPES.length} uploaded</Text>
+              </>
+            )}
           </View>
         </View>
 

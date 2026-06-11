@@ -16,6 +16,12 @@ import userRoutes from './modules/user/user.routes';
 import businessRoutes from './modules/profile/business.routes';
 import documentRoutes from './modules/documents/document.routes';
 import adminRoutes from './modules/admin/admin.routes';
+import paymentRoutes from './modules/payments/payment.routes';
+import { paymentController } from './modules/payments/payment.controller';
+import productRoutes from './modules/products/product.routes';
+import applicationRoutes from './modules/applications/application.routes';
+import verificationRoutes from './modules/verification/verification.routes';
+import homeRoutes from './modules/home/home.routes';
 import { adminService } from './modules/admin/admin.service';
 
 const app = express();
@@ -25,6 +31,15 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
+
+// Payment webhook MUST receive the raw body so the gateway signature can be
+// verified against the exact bytes sent. Registered before express.json().
+app.post(
+  '/api/payments/webhook',
+  express.raw({ type: '*/*' }),
+  (req, res, next) => paymentController.webhook(req, res, next)
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -61,6 +76,11 @@ app.use('/api/cibil', cibilRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/applications', applicationRoutes);
+app.use('/api/verification', verificationRoutes);
+app.use('/api/home', homeRoutes);
 app.use('/api/admin', adminRoutes);
 // Mount /api/profile/business BEFORE /api/profile to prevent prefix conflict
 app.use('/api/profile/business', businessRoutes);

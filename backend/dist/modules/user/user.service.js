@@ -3,7 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userService = exports.UserService = void 0;
 const prisma_1 = require("../../shared/prisma");
 const errors_1 = require("../../shared/errors");
-const auth_service_1 = require("../auth/auth.service");
+// Documents that count toward KYC completion.
+const REQUIRED_KYC_DOCS = ['PAN_CARD', 'AADHAAR_CARD'];
+// The five profile sections shown in the app, each worth an equal share.
+const TOTAL_SECTIONS = 5;
 class UserService {
     async getProfile(userId) {
         const user = await prisma_1.prisma.user.findFirst({
@@ -13,15 +16,48 @@ class UserService {
             },
             include: {
                 businessProfile: true,
+                documents: true,
             },
         });
         if (!user) {
             throw new errors_1.AppError(404, 'User profile not found.');
         }
-        const completion = (0, auth_service_1.calculateProfileCompletion)(user);
         const bp = user.businessProfile;
-        // Format to match exact existing frontend API contract.
-        // DB values are used when available; null/empty otherwise (no fake data).
+        const docs = user.documents ?? [];
+        // ── Build a per-doc-type summary so the UI can show real upload status ──
+        // For each docType keep the newest record's status.
+        const docByType = {};
+        for (const d of docs) {
+            const existing = docByType[d.docType];
+            if (!existing || (d.createdAt && existing.uploadedAt && d.createdAt > existing.uploadedAt) || !existing.uploadedAt) {
+                docByType[d.docType] = {
+                    uploaded: true,
+                    status: d.status,
+                    fileName: d.fileName ?? null,
+                    fileUrl: d.fileUrl ?? null,
+                    uploadedAt: d.createdAt ?? null,
+                };
+            }
+        }
+        const isUploaded = (t) => !!docByType[t]?.uploaded;
+        const isVerified = (t) => docByType[t]?.status === 'verified';
+        // ── Section completion — derived from the SAME data the screen shows ──
+        const sectionsStatus = {
+            personal: !!(user.name && user.name.trim().length > 0),
+            business: !!(bp?.businessName && bp?.businessType),
+            financial: !!(bp?.annualTurnover && String(bp.annualTurnover).trim().length > 0),
+            address: !!(bp?.city && bp?.state),
+            // KYC section is complete once the required documents are uploaded.
+            kyc: REQUIRED_KYC_DOCS.every((t) => isUploaded(t)),
+        };
+        const doneCount = Object.values(sectionsStatus).filter(Boolean).length;
+        const completion = Math.round((doneCount / TOTAL_SECTIONS) * 100);
+        // Keep the cached value on the user fresh (used by login/home).
+        if (user.profileCompletion !== completion) {
+            prisma_1.prisma.user
+                .update({ where: { id: user.id }, data: { profileCompletion: completion } })
+                .catch(() => { });
+        }
         return {
             personalDetails: {
                 fullName: user.name ?? 'Complete Your Profile',
@@ -45,11 +81,31 @@ class UserService {
                 addressLine1: bp?.addressLine1 ?? null,
                 addressLine2: bp?.addressLine2 ?? null,
             },
+            // Per-section completion flags — the frontend's single source of truth.
+            sectionsStatus,
+            // Full document list + a by-type map for quick lookups.
+            documents: docs
+                .map((d) => ({
+                id: d.id,
+                docType: d.docType,
+                status: d.status,
+                fileName: d.fileName,
+                fileUrl: d.fileUrl,
+                uploadedAt: d.createdAt,
+            }))
+                .sort((a, b) => (b.uploadedAt?.getTime?.() ?? 0) - (a.uploadedAt?.getTime?.() ?? 0)),
             kycStatus: {
-                panVerified: bp?.panVerified ?? false,
-                aadhaarVerified: bp?.aadhaarVerified ?? false,
-                gstVerified: bp?.gstVerified ?? false,
+                // Upload status (reflects what the user has actually submitted).
+                panUploaded: isUploaded('PAN_CARD'),
+                aadhaarUploaded: isUploaded('AADHAAR_CARD'),
+                gstUploaded: isUploaded('GST_CERTIFICATE'),
+                bankUploaded: isUploaded('BANK_STATEMENT'),
+                // Verification status (set once a reviewer/ops verifies a document).
+                panVerified: isVerified('PAN_CARD') || (bp?.panVerified ?? false),
+                aadhaarVerified: isVerified('AADHAAR_CARD') || (bp?.aadhaarVerified ?? false),
+                gstVerified: isVerified('GST_CERTIFICATE') || (bp?.gstVerified ?? false),
                 udyamVerified: false, // udyam verification not yet implemented
+                documents: docByType,
                 completionPercentage: completion,
             },
         };
@@ -78,17 +134,12 @@ class UserService {
                 updateData.location = businessDetails.location;
             }
         }
-        // Recalculate profile completion based on updated database values
-        const mergedUser = {
-            name: updateData.name !== undefined ? updateData.name : user.name,
-            companyName: updateData.companyName !== undefined ? updateData.companyName : user.companyName,
-            location: updateData.location !== undefined ? updateData.location : user.location,
-        };
-        updateData.profileCompletion = (0, auth_service_1.calculateProfileCompletion)(mergedUser);
         const updatedUser = await prisma_1.prisma.user.update({
             where: { id: userId },
             data: updateData,
         });
+        // getProfile recomputes completion across ALL sections (personal, business,
+        // financial, address, KYC docs) and caches it on the user — single source.
         return this.getProfile(updatedUser.id);
     }
 }

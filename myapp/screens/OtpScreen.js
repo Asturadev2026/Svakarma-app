@@ -23,6 +23,13 @@ export default function OtpScreen() {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(30);
   const [loading, setLoading] = useState(false);
+  // Demo code returned by the backend's mock SMS provider (absent when live).
+  const [demoOtp, setDemoOtp] = useState(generatedOtp || null);
+
+  // Prefill the field with the demo code so the flow is one tap to demonstrate.
+  useEffect(() => {
+    if (generatedOtp) setOtp(String(generatedOtp));
+  }, [generatedOtp]);
 
   useEffect(() => {
     let interval = null;
@@ -68,10 +75,17 @@ export default function OtpScreen() {
     }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     setTimer(30);
-    console.log(`[AUTH] Resent OTP for ${mobileNumber}: 123456`);
-    Alert.alert('OTP Resent', 'A new OTP has been sent to your mobile number.');
+    try {
+      const response = await authService.sendOtp(mobileNumber || '9999999999');
+      // Refresh the demo code shown to the user (mock mode only).
+      setDemoOtp(response?.devOtp || null);
+      if (response?.devOtp) setOtp(String(response.devOtp));
+      Alert.alert('OTP Resent', 'A new verification code has been sent.');
+    } catch (e) {
+      Alert.alert('Could not resend', e.message || 'Please try again.');
+    }
   };
 
   return (
@@ -104,6 +118,16 @@ export default function OtpScreen() {
                 textAlign="center"
               />
             </View>
+
+            {demoOtp ? (
+              <View style={styles.demoBanner}>
+                <Text style={styles.demoBannerLabel}>DEMO MODE · mock SMS provider</Text>
+                <Text style={styles.demoBannerText}>
+                  Your code is <Text style={styles.demoBannerCode}>{demoOtp}</Text> (auto-filled). A real
+                  SMS is sent once Twilio is enabled.
+                </Text>
+              </View>
+            ) : null}
 
             <View style={styles.resendContainer}>
               {timer > 0 ? (
@@ -142,6 +166,30 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 24,
+  },
+  demoBanner: {
+    backgroundColor: '#FFF7ED',
+    borderColor: '#FDBA74',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 20,
+  },
+  demoBannerLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    color: '#C2410C',
+    marginBottom: 4,
+  },
+  demoBannerText: {
+    fontSize: 13,
+    color: '#7C2D12',
+    lineHeight: 18,
+  },
+  demoBannerCode: {
+    fontWeight: '800',
+    color: '#9A3412',
   },
   header: {
     marginTop: 20,

@@ -18,6 +18,18 @@ import EMICalculatorScreen from "./screens/EMICalculatorScreen";
 import ApplicationStatusScreen from "./screens/ApplicationStatusScreen";
 import ReferScreen from "./screens/ReferScreen";
 import PersonalDetailsScreen from "./screens/PersonalDetailsScreen";
+import EMIPaymentScreen from "./screens/EMIPaymentScreen";
+import ProductDetailScreen from "./screens/ProductDetailScreen";
+import VerificationScreen from "./screens/VerificationScreen";
+import AIUnderwritingScreen from "./screens/AIUnderwritingScreen";
+import ReferencesScreen from "./screens/ReferencesScreen";
+import DisbursalAccountScreen from "./screens/DisbursalAccountScreen";
+import SignAgreementScreen from "./screens/SignAgreementScreen";
+import DisbursedScreen from "./screens/DisbursedScreen";
+import MyApplicationsScreen from "./screens/MyApplicationsScreen";
+import HelpScreen from "./screens/HelpScreen";
+import ProfileReferencesScreen from "./screens/ProfileReferencesScreen";
+import ProfileScreen from "./screens/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -96,6 +108,66 @@ export default function App() {
         <Stack.Screen
           name="ApplicationStatus"
           component={ApplicationStatusScreen}
+        />
+
+        <Stack.Screen
+          name="EMIPayment"
+          component={EMIPaymentScreen}
+        />
+
+        <Stack.Screen
+          name="ProductDetail"
+          component={ProductDetailScreen}
+        />
+
+        <Stack.Screen
+          name="Verification"
+          component={VerificationScreen}
+        />
+
+        <Stack.Screen
+          name="AIUnderwriting"
+          component={AIUnderwritingScreen}
+        />
+
+        <Stack.Screen
+          name="References"
+          component={ReferencesScreen}
+        />
+
+        <Stack.Screen
+          name="DisbursalAccount"
+          component={DisbursalAccountScreen}
+        />
+
+        <Stack.Screen
+          name="SignAgreement"
+          component={SignAgreementScreen}
+        />
+
+        <Stack.Screen
+          name="Disbursed"
+          component={DisbursedScreen}
+        />
+
+        <Stack.Screen
+          name="MyApplications"
+          component={MyApplicationsScreen}
+        />
+
+        <Stack.Screen
+          name="Help"
+          component={HelpScreen}
+        />
+
+        <Stack.Screen
+          name="ProfileReferences"
+          component={ProfileReferencesScreen}
+        />
+
+        <Stack.Screen
+          name="ProfileDetails"
+          component={ProfileScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

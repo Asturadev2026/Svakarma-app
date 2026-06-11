@@ -143,7 +143,7 @@ export default function LoansScreen() {
         <View style={styles.quickActionsRow}>
           <TouchableOpacity
             style={[styles.quickCard, { backgroundColor: "#8B1A1A" }]}
-            onPress={() => navigation.navigate("ApplyLoan")}
+            onPress={() => navigation.navigate("ProductDetail", { productKey: "samridhi" })}
             activeOpacity={0.88}
           >
             <Text style={styles.quickCardIcon}>📝</Text>
@@ -161,13 +161,27 @@ export default function LoansScreen() {
 
           <TouchableOpacity
             style={[styles.quickCard, { backgroundColor: "#FFFFFF" }]}
-            onPress={() => navigation.navigate("ApplicationStatus")}
+            onPress={() => navigation.navigate("MyApplications")}
             activeOpacity={0.88}
           >
             <Text style={styles.quickCardIcon}>📊</Text>
             <Text style={styles.quickCardLabel}>My Status</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Pay EMI (Razorpay-style checkout) */}
+        <TouchableOpacity
+          style={styles.payEmiBtn}
+          onPress={() => navigation.navigate("EMIPayment")}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.payEmiIcon}>💳</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.payEmiTitle}>Pay your EMI</Text>
+            <Text style={styles.payEmiSub}>Secure checkout · UPI, cards & netbanking</Text>
+          </View>
+          <Text style={styles.payEmiChevron}>→</Text>
+        </TouchableOpacity>
 
         {/* Active Applications */}
         <Text style={styles.sectionTitle}>My Applications</Text>
@@ -245,7 +259,7 @@ export default function LoansScreen() {
             key={product.id}
             style={styles.productCard}
             activeOpacity={0.88}
-            onPress={() => navigation.navigate("ApplyLoan")}
+            onPress={() => navigation.navigate("ProductDetail", { productKey: product.id })}
           >
             <View style={[styles.productIcon, { backgroundColor: product.color }]}>
               <Text style={styles.productIconEmoji}>{product.icon}</Text>
@@ -298,8 +312,29 @@ const styles = StyleSheet.create({
   quickActionsRow: {
     flexDirection: "row",
     gap: 12,
-    marginBottom: 28,
+    marginBottom: 16,
   },
+  payEmiBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    marginBottom: 28,
+    borderWidth: 1,
+    borderColor: "#F0E0E0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  payEmiIcon: { fontSize: 26 },
+  payEmiTitle: { fontSize: 16, fontWeight: "700", color: "#1a1a1a" },
+  payEmiSub: { fontSize: 12, color: "#6B7280", marginTop: 2 },
+  payEmiChevron: { fontSize: 20, color: "#8B1A1A", fontWeight: "700" },
   quickCard: {
     flex: 1,
     borderRadius: 20,

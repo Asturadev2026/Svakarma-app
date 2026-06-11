@@ -26,6 +26,14 @@ const FIELDS = [
     autoCapitalize: 'words',
   },
   {
+    key: 'email',
+    label: 'Email',
+    placeholder: 'e.g. you@business.in',
+    keyboardType: 'email-address',
+    editable: true,
+    autoCapitalize: 'none',
+  },
+  {
     key: 'mobile',
     label: 'Mobile Number',
     placeholder: '10-digit mobile number',
@@ -58,11 +66,13 @@ export default function PersonalDetailsScreen() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     fullName: '',
+    email: '',
     mobile: '',
     pan: '',
     aadhaar: '',
   });
   const [originalName, setOriginalName] = useState('');
+  const [originalEmail, setOriginalEmail] = useState('');
 
   // ── Fetch profile on mount ───────────────────────────────────────────────
   useEffect(() => {
@@ -72,9 +82,12 @@ export default function PersonalDetailsScreen() {
         if (response.success) {
           const p = response.data?.personalDetails ?? {};
           const name = (p.fullName && p.fullName !== 'Complete Your Profile') ? p.fullName : '';
+          const email = p.email ?? '';
           setOriginalName(name);
+          setOriginalEmail(email);
           setForm({
             fullName:  name,
+            email,
             mobile:    p.mobile   ?? '',
             pan:       p.pan      ?? '',
             aadhaar:   p.aadhaar  ?? '',
@@ -101,10 +114,16 @@ export default function PersonalDetailsScreen() {
       return;
     }
 
+    const trimmedEmail = form.email.trim();
+    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      Alert.alert('Invalid email', 'Please enter a valid email address.');
+      return;
+    }
+
     setSaving(true);
     try {
       const response = await api.put('/profile', {
-        personalDetails: { fullName: trimmedName },
+        personalDetails: { fullName: trimmedName, email: trimmedEmail },
       });
 
       if (response.success) {
@@ -121,7 +140,7 @@ export default function PersonalDetailsScreen() {
     }
   };
 
-  const hasChanged = form.fullName.trim() !== originalName;
+  const hasChanged = form.fullName.trim() !== originalName || form.email.trim() !== originalEmail;
 
   // ── Loading state ────────────────────────────────────────────────────────
   if (loading) {

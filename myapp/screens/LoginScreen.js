@@ -41,7 +41,9 @@ export default function LoginScreen() {
       if (response.success) {
         navigation.navigate("OTP", {
           mobileNumber,
-          generatedOtp: "123456",
+          // In mock mode the backend returns the code (devOtp) so the demo can
+          // show/prefill it. With the live SMS provider this is absent.
+          generatedOtp: response.devOtp || null,
         });
       } else {
         Alert.alert("Error", response.message || "Failed to send OTP. Please try again.");

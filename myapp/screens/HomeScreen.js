@@ -21,7 +21,7 @@ import WhySvakarmaCard from "../components/WhySvakarmaCard";
 
 export default function HomeScreen() {
   const [profile, setProfile] = useState(null);
-  const [loans, setLoans] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [cibil, setCibil] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,14 +30,14 @@ export default function HomeScreen() {
       let active = true;
       const fetchData = async () => {
         try {
-          const [profileRes, loansRes, cibilRes] = await Promise.all([
+          const [profileRes, summaryRes, cibilRes] = await Promise.all([
             api.get('/profile'),
-            api.get('/loans'),
+            api.get('/home/summary'),
             api.get('/cibil')
           ]);
           if (active) {
             if (profileRes.success) setProfile(profileRes.data);
-            if (loansRes.success) setLoans(loansRes.data);
+            if (summaryRes.success) setSummary(summaryRes);
             if (cibilRes.success) setCibil(cibilRes.data);
           }
         } catch (err) {
@@ -78,7 +78,8 @@ export default function HomeScreen() {
   };
 
   const initials = getInitials(displayName);
-  const activeLoan = loans && loans.length > 0 ? loans[0] : null;
+  const activeLoan = summary?.activeLoan || null;
+  const preApproved = summary?.preApproved || null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -118,7 +119,7 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            <OfferCard activeLoan={activeLoan} />
+            <OfferCard activeLoan={activeLoan} preApproved={preApproved} />
 
             <QuickActions />
             <LoanCard activeLoan={activeLoan} />

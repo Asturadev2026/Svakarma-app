@@ -17,4 +17,8 @@ router.put('/', authMiddleware, (req: any, res: any, next: any) => {
   userController.updateProfile(req, res, next);
 });
 
+router.post('/references', authMiddleware, (req: any, res: any, next: any) => {
+  userController.saveReferences(req, res, next);
+});
+
 export default router;

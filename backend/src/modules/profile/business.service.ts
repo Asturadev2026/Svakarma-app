@@ -28,6 +28,19 @@ export class BusinessService {
       throw new AppError(400, 'businessType and businessName are required.');
     }
 
+    // Validate government-ID formats when provided (defense-in-depth; the app
+    // validates these too).
+    const checks: Array<[string | undefined | null, RegExp, string]> = [
+      [dto.panNumber, /^[A-Z]{5}[0-9]{4}[A-Z]$/, 'PAN must be 10 characters (e.g. ABCDE1234F).'],
+      [dto.aadhaarNumber, /^[0-9]{12}$/, 'Aadhaar must be exactly 12 digits.'],
+      [dto.gstNumber, /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/, 'GSTIN must be a valid 15-character number.'],
+      [dto.pincode, /^[0-9]{6}$/, 'Pincode must be 6 digits.'],
+    ];
+    for (const [value, re, msg] of checks) {
+      const v = (value ?? '').toString().trim();
+      if (v && !re.test(v.toUpperCase())) throw new AppError(400, msg);
+    }
+
     // Verify user exists
     const user = await prisma.user.findFirst({
       where: { id: userId, deletedAt: null },

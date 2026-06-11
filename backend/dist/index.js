@@ -20,6 +20,8 @@ const user_routes_1 = __importDefault(require("./modules/user/user.routes"));
 const business_routes_1 = __importDefault(require("./modules/profile/business.routes"));
 const document_routes_1 = __importDefault(require("./modules/documents/document.routes"));
 const admin_routes_1 = __importDefault(require("./modules/admin/admin.routes"));
+const payment_routes_1 = __importDefault(require("./modules/payments/payment.routes"));
+const payment_controller_1 = require("./modules/payments/payment.controller");
 const admin_service_1 = require("./modules/admin/admin.service");
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +29,9 @@ const PORT = process.env.PORT || 5000;
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)());
 app.use((0, morgan_1.default)('dev'));
+// Payment webhook MUST receive the raw body so the gateway signature can be
+// verified against the exact bytes sent. Registered before express.json().
+app.post('/api/payments/webhook', express_1.default.raw({ type: '*/*' }), (req, res, next) => payment_controller_1.paymentController.webhook(req, res, next));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 // Serve uploaded files statically — accessible at /uploads/<filename>
@@ -61,6 +66,7 @@ app.use('/api/cibil', cibil_routes_1.default);
 app.use('/api/loans', loan_routes_1.default);
 app.use('/api/referrals', referral_routes_1.default);
 app.use('/api/documents', document_routes_1.default);
+app.use('/api/payments', payment_routes_1.default);
 app.use('/api/admin', admin_routes_1.default);
 // Mount /api/profile/business BEFORE /api/profile to prevent prefix conflict
 app.use('/api/profile/business', business_routes_1.default);

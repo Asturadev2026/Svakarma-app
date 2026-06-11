@@ -37,22 +37,24 @@ export default function LoanCard({ activeLoan }) {
     return date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
   };
 
+  const paid = activeLoan.paidEmis ?? 0;
+  const total = activeLoan.totalEmis ?? 24;
+  const progress = total > 0 ? Math.min(1, paid / total) : 0;
+
   return (
     <TouchableOpacity
       style={styles.card}
       activeOpacity={0.9}
-      onPress={() =>
-        navigation.navigate("ApplicationStatus")
-      }
+      onPress={() => navigation.navigate("MyApplications")}
     >
       <View style={styles.topRow}>
         <View>
           <Text style={styles.label}>
-            Active Loan ({activeLoan.loanNumber})
+            Outstanding ({activeLoan.loanNumber})
           </Text>
 
           <Text style={styles.amount}>
-            ₹{Number(activeLoan.amount).toLocaleString("en-IN")}
+            ₹{Number(activeLoan.outstanding ?? activeLoan.amount).toLocaleString("en-IN")}
           </Text>
         </View>
 
@@ -67,30 +69,33 @@ export default function LoanCard({ activeLoan }) {
 
       <View style={styles.bottomRow}>
         <View>
-          <Text style={styles.bottomLabel}>
-            EMI Due
-          </Text>
-
+          <Text style={styles.bottomLabel}>Next EMI</Text>
           <Text style={styles.bottomValue}>
             ₹{Number(activeLoan.emiDue).toLocaleString("en-IN")}
           </Text>
         </View>
 
         <View>
-          <Text style={styles.bottomLabel}>
-            Next Due
-          </Text>
-
+          <Text style={styles.bottomLabel}>Due</Text>
           <Text style={styles.bottomValue}>
             {formatDate(activeLoan.nextDueDate)}
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.payButton}>
-          <Text style={styles.payButtonText}>
-            Pay Now
-          </Text>
+        <TouchableOpacity
+          style={styles.payButton}
+          onPress={() => navigation.navigate("EMIPayment")}
+        >
+          <Text style={styles.payButtonText}>Pay Now</Text>
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.progressRow}>
+        <Text style={styles.progressLabel}>{paid} of {total} EMIs paid</Text>
+        <Text style={styles.progressPct}>{Math.round(progress * 100)}%</Text>
+      </View>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
       </View>
     </TouchableOpacity>
   );
@@ -163,5 +168,32 @@ const styles = StyleSheet.create({
   payButtonText: {
     color: "#FFFFFF",
     fontWeight: "700",
+  },
+  progressRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  progressLabel: {
+    color: "#6B7280",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  progressPct: {
+    color: "#8B1A1A",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  progressTrack: {
+    height: 8,
+    backgroundColor: "#F0E0E0",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#8B1A1A",
+    borderRadius: 8,
   },
 });

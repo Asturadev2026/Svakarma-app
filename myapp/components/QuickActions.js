@@ -15,54 +15,14 @@ export default function QuickActions() {
   const navigation = useNavigation();
 
   const actions = [
-    {
-      label: "Apply",
-      icon: "file-text",
-      screen: "ApplyLoan",
-    },
-
-    {
-      label: "Free CIBIL",
-      icon: "trending-up",
-      screen: "CIBIL",
-    },
-
-    {
-      label: "EMI Calc",
-      icon: "calculator",
-      screen: "EMICalculator",
-    },
-
-    {
-      label: "Status",
-      icon: "activity",
-      screen: "ApplicationStatus",
-    },
-
-    {
-      label: "Refer",
-      icon: "gift",
-      screen: "Refer",
-    },
-
-    {
-      label: "Profile",
-      icon: "user",
-      screen: "MainTabs",
-      params: { screen: "Profile" },
-    },
-
-    {
-      label: "Biz Profile",
-      icon: "briefcase",
-      screen: "OnboardingSelectType",
-    },
-
-    {
-      label: "Upload Docs",
-      icon: "upload",
-      screen: "OnboardingDocumentUpload",
-    },
+    { label: "Apply", icon: "file-text", screen: "ProductDetail", params: { productKey: "samridhi" } },
+    { label: "Free CIBIL", icon: "trending-up", screen: "CIBIL" },
+    { label: "EMI Calc", icon: "calculator", screen: "EMICalculator" },
+    { label: "Status", icon: "activity", screen: "MyApplications" },
+    { label: "Refer", icon: "gift", screen: "Refer" },
+    { label: "Profile", icon: "user", screen: "MainTabs", params: { screen: "Profile" } },
+    { label: "Pay EMI", icon: "credit-card", screen: "EMIPayment" },
+    { label: "Help", icon: "help-circle", screen: "Help" },
   ];
 
   const handlePress = (item) => {

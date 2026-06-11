@@ -8,6 +8,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma_1 = require("../../shared/prisma");
 const env_1 = require("../../config/env");
 const errors_1 = require("../../shared/errors");
+const sms_1 = require("../../providers/sms");
 const calculateProfileCompletion = (user) => {
     let score = 0;
     if (user.name)
@@ -24,22 +25,32 @@ class AuthService {
         if (!phone || phone.length !== 10) {
             throw new errors_1.AppError(400, 'Invalid phone number. Must be a 10-digit number.');
         }
-        // Generate standard OTP (use '123456' for predictable test experience, but write it dynamically)
-        // For production-readiness, we can use a random generator but fall back to '123456' for specific demo flows.
-        const otp = phone === '9908889635' || phone === '7984876749' ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
+        const isProd = process.env.NODE_ENV === 'production';
+        // OTP generation is real in every mode. The fixed '123456' demo shortcut is
+        // only allowed OUTSIDE production, so live builds always use a random code.
+        const demoNumbers = phone.startsWith('999999') || phone === '9908889635' || phone === '7984876749';
+        const otp = (!isProd && demoNumbers)
+            ? '123456'
+            : Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
-        // Save to database
+        // Persist the OTP for verification.
         await prisma_1.prisma.oTP.create({
-            data: {
-                phone,
-                otp,
-                expiresAt,
-                verified: false,
-            },
+            data: { phone, otp, expiresAt, verified: false },
         });
-        console.log(`[OTP Engine] OTP sent to ${phone}: ${otp}`);
+        // Hand off "transmission" to the configured provider (mock | twilio).
+        // The real send logic and result shape are identical across providers.
+        const result = await (0, sms_1.getSmsProvider)().sendOtp(phone, otp);
+        // The code is returned to the client ONLY when running the mock provider
+        // outside production — purely so the demo can display/auto-fill it. With the
+        // live Twilio provider, or in production, the code is never exposed.
+        const exposeForDemo = (0, sms_1.isMockSms)() && !isProd;
         return {
-            message: `OTP sent successfully. (Mocked transmission - code printed to console)`,
+            message: exposeForDemo
+                ? 'OTP sent (mock provider). Demo code returned for testing only.'
+                : 'OTP sent successfully.',
+            provider: result.provider,
+            messageSid: result.messageSid,
+            ...(exposeForDemo ? { devOtp: otp } : {}),
         };
     }
     async verifyOtp(phone, otp, deviceInfo) {
@@ -102,7 +113,9 @@ class AuthService {
                 name: user.name ?? 'Complete Your Profile',
                 companyName: user.companyName ?? '',
                 location: user.location ?? '',
-                profileCompletion: (0, exports.calculateProfileCompletion)(user),
+                // Use the cached, all-sections completion (refreshed whenever the profile
+                // is fetched/updated). Falls back to the stored value at login.
+                profileCompletion: user.profileCompletion ?? 0,
             },
         };
     }

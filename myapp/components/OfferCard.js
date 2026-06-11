@@ -9,14 +9,17 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
-export default function OfferCard({ activeLoan }) {
+export default function OfferCard({ activeLoan, preApproved }) {
   const navigation = useNavigation();
+
+  const eligibleAmount = preApproved?.eligibleAmount ?? 850000;
+  const expiresInDays = preApproved?.expiresInDays ?? 14;
 
   const handlePress = () => {
     if (activeLoan) {
       navigation.navigate("Loans");
     } else {
-      navigation.navigate("ApplyLoan");
+      navigation.navigate("ProductDetail", { productKey: "samridhi" });
     }
   };
 
@@ -41,7 +44,7 @@ export default function OfferCard({ activeLoan }) {
 
         <View style={styles.expiryBadge}>
           <Text style={styles.expiryText}>
-            {activeLoan ? "Active" : "Expires in 14d"}
+            {activeLoan ? "Active" : `Expires in ${expiresInDays}d`}
           </Text>
         </View>
 
@@ -50,14 +53,16 @@ export default function OfferCard({ activeLoan }) {
         </Text>
 
         <Text style={styles.amount}>
-          {activeLoan ? `₹ ${Number(activeLoan.amount).toLocaleString("en-IN")}` : "₹ 8,50,000"}
+          {activeLoan
+            ? `₹ ${Number(activeLoan.outstanding ?? activeLoan.amount).toLocaleString("en-IN")}`
+            : `₹ ${Number(eligibleAmount).toLocaleString("en-IN")}`}
         </Text>
 
         <View style={styles.divider} />
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            {activeLoan ? "Manage Existing Loan" : "Apply for a Loan"}
+            {activeLoan ? "Manage Existing Loan" : "Tap to claim · Zero docs"}
           </Text>
 
           <Feather name="arrow-right" size={24} color="#FFFFFF" />

@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import api from "../services/api";
 
@@ -20,39 +20,64 @@ export default function ProfileScreen() {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await api.get('/profile');
-        if (response.success) {
-          setProfileData(response.data);
-        }
-      } catch (err) {
-        console.warn('[PROFILE] Failed to fetch profile:', err.message);
-      } finally {
-        setLoading(false);
+  const fetchProfile = React.useCallback(async () => {
+    try {
+      const response = await api.get('/profile');
+      if (response.success) {
+        setProfileData(response.data);
       }
-    };
-    fetchProfile();
+    } catch (err) {
+      console.warn('[PROFILE] Failed to fetch profile:', err.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  // Refetch whenever the screen regains focus, so edits made on the onboarding,
+  // document-upload, or personal-details screens show up immediately.
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProfile();
+    }, [fetchProfile])
+  );
 
   const personal = profileData?.personalDetails;
   const business = profileData?.businessDetails;
   const kyc = profileData?.kycStatus;
+  // Per-section flags computed by the backend (single source of truth).
+  const status = profileData?.sectionsStatus || {};
 
-  // Derive completion percentage from kycStatus
+  // Completion percentage from the backend (now reflects all five sections).
   const completionPct = kyc?.completionPercentage ?? 0;
 
-  // Derive whether business info is complete
-  const businessComplete = !!(business?.businessName);
+  // ── KYC documents subtitle: reflect what was actually uploaded/verified ──
+  const kycUploadedCount =
+    (kyc?.panUploaded ? 1 : 0) +
+    (kyc?.aadhaarUploaded ? 1 : 0) +
+    (kyc?.gstUploaded ? 1 : 0) +
+    (kyc?.bankUploaded ? 1 : 0);
+  const requiredUploaded = !!(kyc?.panUploaded && kyc?.aadhaarUploaded);
+  const allVerified = !!(kyc?.panVerified && kyc?.aadhaarVerified);
+  let kycSubtitle;
+  if (allVerified) kycSubtitle = "Verified";
+  else if (kycUploadedCount > 0)
+    kycSubtitle = `${kycUploadedCount} uploaded${requiredUploaded ? "" : " · PAN & Aadhaar required"}`;
+  else kycSubtitle = "Not uploaded";
+
+  // Prefer backend section flags; fall back to field presence for resilience.
+  const personalComplete = status.personal ?? !!(personal?.fullName && personal.fullName !== 'Complete Your Profile');
+  const businessComplete = status.business ?? !!(business?.businessName);
+  const financialComplete = status.financial ?? !!(business?.annualTurnover);
+  const addressComplete = status.address ?? !!(business?.city && business?.state);
+  const kycComplete = status.kyc ?? requiredUploaded;
+  const referencesList = profileData?.references || [];
+  const referencesComplete = status.references ?? referencesList.length >= 2;
 
   const sections = [
     {
       title: "Personal details",
-      fields: personal?.fullName && personal.fullName !== 'Complete Your Profile'
-        ? "Name on file"
-        : "Pending",
-      completed: !!(personal?.fullName && personal.fullName !== 'Complete Your Profile'),
+      fields: personalComplete ? (personal?.fullName || "Name on file") : "Pending",
+      completed: personalComplete,
       icon: "user",
       onPress: () => navigation.navigate("EditPersonalDetails"),
     },
@@ -65,22 +90,33 @@ export default function ProfileScreen() {
     },
     {
       title: "KYC documents",
-      fields: (kyc?.panVerified && kyc?.aadhaarVerified) ? "Verified" : "Pending verification",
-      completed: !!(kyc?.panVerified && kyc?.aadhaarVerified),
+      fields: kycSubtitle,
+      completed: kycComplete,
       icon: "shield",
       onPress: () => navigation.navigate("OnboardingDocumentUpload"),
     },
     {
       title: "Financial profile",
-      fields: business?.annualTurnover ? business.annualTurnover : "Pending",
-      completed: !!(business?.annualTurnover),
+      fields: financialComplete ? business.annualTurnover : "Pending",
+      completed: financialComplete,
       icon: "trending-up",
+      onPress: () => navigation.navigate("OnboardingBusinessDetails"),
     },
     {
       title: "Address proof",
-      fields: business?.city ? `${business.city}, ${business.state ?? ''}` : "Pending",
-      completed: !!(business?.city),
+      fields: addressComplete ? `${business.city}, ${business.state ?? ''}` : "Pending",
+      completed: addressComplete,
       icon: "map-pin",
+      onPress: () => navigation.navigate("OnboardingBusinessDetails"),
+    },
+    {
+      title: "References",
+      fields: referencesComplete
+        ? `${referencesList.length} saved`
+        : (referencesList.length === 1 ? "1 of 2 added" : "2 fields pending"),
+      completed: referencesComplete,
+      icon: "users",
+      onPress: () => navigation.navigate("ProfileReferences"),
     },
   ];
 
@@ -89,6 +125,7 @@ export default function ProfileScreen() {
     ["Aadhaar",     personal?.aadhaar ?? "—"],
     ["Udyam ID",    business?.udyamId ?? "—"],
     ["GSTIN",       business?.gstin ?? "—"],
+    ["Email",       personal?.email ?? "—"],
     ["Mobile",      personal?.mobile ? `+91 ${personal.mobile}` : "—"],
     ["Business",    business?.businessName ?? "—"],
   ];
