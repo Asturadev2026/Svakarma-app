@@ -232,38 +232,52 @@ npm install
 
 This will take longer than the others because the mobile app has more packages.
 
-### 4.3 — Find your computer's IP address
+### 4.3 — Create a `.env` file
+
+In the `myapp` folder (same location as `.env.example`), create a new file named `.env`.
+
+**Option A (recommended):**
+```bash
+cp .env.example .env
+```
+
+**Option B (Windows Command Prompt):**
+```cmd
+copy .env.example .env
+```
+
+**Option C:**
+Manually create a file named `.env` and copy the contents from `.env.example`.
+
+### 4.4 — Find your computer's IP address and update `.env`
 
 The mobile app on your phone needs to know the address of the backend running on your computer. Since they're on the same Wi-Fi, you need your computer's local IP address.
 
 **On Windows:**
-1. Open Command Prompt
-2. Type `ipconfig` and press Enter
-3. Look for a section called **"Wireless LAN adapter Wi-Fi"** (or similar)
-4. Copy the **IPv4 Address** — it will look like `192.168.x.x`
+1. Open Command Prompt and run `ipconfig`
+2. Look for your active Wi-Fi or Ethernet adapter and find the line:
+   `IPv4 Address . . . . . . . . . . : 10.xx.xx.xx` or `192.168.x.x`
+3. Copy the IP address.
 
 **On Mac:**
-1. Open Terminal
-2. Type `ifconfig | grep "inet "` and press Enter
-3. Look for a line that starts with `inet 192.168.` (not `127.0.0.1`)
+1. Open Terminal and run `ifconfig | grep "inet "`
+2. Look for a line that starts with `inet 192.168.` or `inet 10.` (not `127.0.0.1`)
+3. Copy the IP address.
 
-### 4.4 — Update the backend URL in the app
+Now open `myapp/.env` in VS Code and set the value of `EXPO_PUBLIC_API_URL` to match your IP:
 
-Open the file `myapp/services/api.js` in VS Code and find this line near the top:
-
-```js
-const DEV_LAN_IP = '10.47.14.221';
+```env
+EXPO_PUBLIC_API_URL=http://<YOUR_LAN_IP>:5000/api
 ```
 
-Replace the IP address with **your own IP** from the previous step:
-
-```js
-const DEV_LAN_IP = '192.168.1.5'; // ← Put YOUR IP here
+Example:
+```env
+EXPO_PUBLIC_API_URL=http://10.48.129.221:5000/api
 ```
 
-> ⚠️ **Important:** If you switch Wi-Fi networks, your IP address will change and you'll need to update this again.
+> ⚠️ **Important:** If you switch Wi-Fi networks, your IP address will change and you'll need to update this `.env` file again.
 
-> 💡 **If you're using an Android emulator instead of a real phone**, use `10.0.2.2` instead — this is a special address that Android emulators use to reach your computer's localhost.
+> 💡 **If you're using an Android emulator instead of a real phone**, you can use `http://10.0.2.2:5000/api` — this is a special address that Android emulators use to reach your computer's localhost. If you are using an iOS Simulator, you can use `http://localhost:5000/api`.
 
 ### 4.5 — Start the Expo development server
 
@@ -349,12 +363,12 @@ Since this is a dev environment, we don't want to send real SMS messages or proc
 
 ### ❌ "The app can't connect to the server" on the mobile app
 
-**Cause:** The `DEV_LAN_IP` in `myapp/services/api.js` is wrong or outdated.
+**Cause:** The `EXPO_PUBLIC_API_URL` in `myapp/.env` is wrong or outdated (e.g. your computer's IP address changed).
 
 **Fix:**
-1. Run `ipconfig` (Windows) to get your current IP
-2. Update `DEV_LAN_IP` in `myapp/services/api.js`
-3. Save the file — Expo will automatically reload the app
+1. Run `ipconfig` (Windows) or `ifconfig` (Mac) to get your current LAN IP
+2. Update the IP in `EXPO_PUBLIC_API_URL` inside `myapp/.env`
+3. Save the file and restart your Expo server with `npx expo start -c` to clear the cache and load the new IP address.
 
 ---
 
