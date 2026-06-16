@@ -1,0 +1,33 @@
+# Maestro flow: Login (Splash → phone → OTP → verify)
+# Runs against the REAL app on an emulator/device.
+#
+# Prereqs:
+#   • Backend running in mock mode and reachable from the device.
+#   • Use the demo number 9999999999 → backend returns OTP 123456, and the
+#     OTP screen auto-fills it (mock SMS provider).
+#   • For the flow to land on the Permissions screen, this number must already
+#     be ONBOARDED (a new number routes to onboarding instead — see the guide).
+
+appId: com.svakarma.myapp
+---
+- launchApp:
+    clearState: true
+
+# Splash → Login
+- assertVisible: "Get Started"
+- tapOn: "Get Started"
+
+# Login screen
+- assertVisible: "Welcome"
+- tapOn: "98765 43210"          # phone field (placeholder)
+- inputText: "9999999999"
+- hideKeyboard
+- tapOn: "Send OTP"
+
+# OTP screen — demo code is shown + auto-filled by the mock provider
+- assertVisible: "Verify Mobile"
+- assertVisible: "DEMO MODE"
+- tapOn: "Verify & Proceed"
+
+# Landed past login (onboarded number → Permissions)
+- assertVisible: "A few permissions"

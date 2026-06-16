@@ -1,0 +1,23 @@
+# Maestro flow: Permissions screen
+# Reuses the login flow to get here, then verifies the screen + Continue → Home.
+
+appId: com.svakarma.myapp
+---
+- runFlow: login.yaml
+
+# Permissions screen content
+- assertVisible: "A few permissions"
+- assertVisible: "Location"
+- assertVisible: "Contacts"
+- assertVisible: "Notifications"
+- assertVisible: "Account Aggregator framework"
+
+# Note: we don't toggle the switches — tapping them triggers native OS
+# permission dialogs (Location/Contacts/Notifications). Maestro CAN handle those
+# (e.g. `- tapOn: "While using the app"`), but it's device/OS-specific, so we
+# verify the screen + the Continue path instead.
+
+- tapOn: "Continue"
+
+# Lands on the Home dashboard (MainTabs default tab)
+- assertVisible: "Namaste"

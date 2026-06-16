@@ -1,0 +1,16 @@
+# Maestro flow: Permissions — EXPO GO variant. Reuses the Expo Go login flow.
+# See login.expogo.yaml for prerequisites (app open at Splash, adb device, backend).
+
+appId: host.exp.exponent
+---
+- runFlow: login.expogo.yaml
+
+- assertVisible: "A few permissions"
+- assertVisible: "Location"
+- assertVisible: "Contacts"
+- assertVisible: "Notifications"
+- assertVisible: "Account Aggregator framework"
+
+- tapOn: "Continue"
+
+- assertVisible: "Namaste"

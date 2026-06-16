@@ -1,13 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from './api';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Keep in sync with api.js BASE_URL config
-// ─────────────────────────────────────────────────────────────────────────────
-const DEV_LAN_IP = '10.47.14.221';
-const PORT = 5000;
-const BASE_URL = `http://${DEV_LAN_IP}:${PORT}/api`;
+import api, { BASE_URL } from './api';
 
 /**
  * Document Upload Service

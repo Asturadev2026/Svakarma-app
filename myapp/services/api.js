@@ -15,10 +15,10 @@ import { Platform } from 'react-native';
 //
 // ⚠️ CHANGE THIS when running on a physical device!
 // ─────────────────────────────────────────────────────────────────────────────
-const DEV_LAN_IP = '10.47.14.221'; // ← Your LAN IP from `ipconfig` output
+const DEV_LAN_IP = '10.48.129.221'; // ← Your LAN IP from `ipconfig` output
 const PORT = 5000;
 
-const BASE_URL = `http://${DEV_LAN_IP}:${PORT}/api`;
+export const BASE_URL = `http://${DEV_LAN_IP}:${PORT}/api`;
 
 
 const api = axios.create({
