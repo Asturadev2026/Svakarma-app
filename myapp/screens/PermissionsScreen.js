@@ -4,10 +4,10 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Switch,
   Alert,
+  Platform,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -79,135 +79,132 @@ export default function PermissionsScreen() {
     // navigation.navigate("Home");
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      {/* Back */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
       >
-        {/* Back */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#111827" />
-        </TouchableOpacity>
+        <Ionicons name="arrow-back" size={24} color="#111827" />
+      </TouchableOpacity>
 
-        {/* Heading */}
-        <Text style={styles.title}>
-          A few permissions
-        </Text>
+      {/* Heading */}
+      <Text style={styles.title}>
+        A few permissions
+      </Text>
 
-        <Text style={styles.subtitle}>
-          Per RBI digital lending guidelines,
-          we ask only for what's strictly needed.
-        </Text>
+      <Text style={styles.subtitle}>
+        Per RBI digital lending guidelines,
+        we ask only for what's strictly needed.
+      </Text>
 
-        {/* Location */}
-        <View style={styles.card}>
-          <View style={styles.iconContainer}>
-            <Feather name="map-pin" size={22} color="#8B1A1A" />
-          </View>
-
-          <View style={styles.textContainer}>
-            <Text style={styles.cardTitle}>
-              Location
-            </Text>
-
-            <Text style={styles.cardDescription}>
-              For nearest branch and serviceability
-              check. Used only at app open.
-            </Text>
-          </View>
-
-          <Switch
-            value={locationEnabled}
-            onValueChange={requestLocationPermission}
-            trackColor={{
-              false: "#E5E5E5",
-              true: "#8B1A1A",
-            }}
-            thumbColor="#ffffff"
-          />
+      {/* Location */}
+      <View style={styles.card}>
+        <View style={styles.iconContainer}>
+          <Feather name="map-pin" size={22} color="#8B1A1A" />
         </View>
 
-        {/* Contacts */}
-        <View style={styles.card}>
-          <View style={styles.iconContainer}>
-            <Feather name="users" size={22} color="#8B1A1A" />
-          </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.cardTitle}>
+            Location
+          </Text>
 
-          <View style={styles.textContainer}>
-            <Text style={styles.cardTitle}>
-              Contacts
-            </Text>
-
-            <Text style={styles.cardDescription}>
-              To pre-fill reference contacts.
-              We never store your full address book.
-            </Text>
-          </View>
-
-          <Switch
-            value={contactsEnabled}
-            onValueChange={requestContactsPermission}
-            trackColor={{
-              false: "#E5E5E5",
-              true: "#8B1A1A",
-            }}
-            thumbColor="#ffffff"
-          />
-        </View>
-
-        {/* Notifications */}
-        <View style={styles.card}>
-          <View style={styles.iconContainer}>
-            <Feather name="bell" size={22} color="#8B1A1A" />
-          </View>
-
-          <View style={styles.textContainer}>
-            <Text style={styles.cardTitle}>
-              Notifications
-            </Text>
-
-            <Text style={styles.cardDescription}>
-              EMI reminders, application
-              status and OTPs.
-            </Text>
-          </View>
-
-          <Switch
-            value={notificationsEnabled}
-            onValueChange={requestNotificationPermission}
-            trackColor={{
-              false: "#E5E5E5",
-              true: "#8B1A1A",
-            }}
-            thumbColor="#ffffff"
-          />
-        </View>
-
-        {/* Info Box */}
-        <View style={styles.infoBox}>
-          <Feather name="shield" size={20} color="#8B1A1A" style={{ marginRight: 10, marginTop: 2 }} />
-          <Text style={styles.infoText}>
-            We do not access your photos,
-            media or full contact list. Bank SMS
-            access is not required — we use the
-            Account Aggregator framework instead.
+          <Text style={styles.cardDescription}>
+            For nearest branch and serviceability
+            check. Used only at app open.
           </Text>
         </View>
 
-        {/* Continue */}
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleContinue}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.buttonText}>
-            Continue
+        <Switch
+          value={locationEnabled}
+          onValueChange={requestLocationPermission}
+          trackColor={{
+            false: "#E5E5E5",
+            true: "#8B1A1A",
+          }}
+          thumbColor="#ffffff"
+        />
+      </View>
+
+      {/* Contacts */}
+      <View style={styles.card}>
+        <View style={styles.iconContainer}>
+          <Feather name="users" size={22} color="#8B1A1A" />
+        </View>
+
+        <View style={styles.textContainer}>
+          <Text style={styles.cardTitle}>
+            Contacts
           </Text>
-        </TouchableOpacity>
-      </ScrollView>
+
+          <Text style={styles.cardDescription}>
+            To pre-fill reference contacts.
+            We never store your full address book.
+          </Text>
+        </View>
+
+        <Switch
+          value={contactsEnabled}
+          onValueChange={requestContactsPermission}
+          trackColor={{
+            false: "#E5E5E5",
+            true: "#8B1A1A",
+          }}
+          thumbColor="#ffffff"
+        />
+      </View>
+
+      {/* Notifications */}
+      <View style={styles.card}>
+        <View style={styles.iconContainer}>
+          <Feather name="bell" size={22} color="#8B1A1A" />
+        </View>
+
+        <View style={styles.textContainer}>
+          <Text style={styles.cardTitle}>
+            Notifications
+          </Text>
+
+          <Text style={styles.cardDescription}>
+            EMI reminders, application
+            status and OTPs.
+          </Text>
+        </View>
+
+        <Switch
+          value={notificationsEnabled}
+          onValueChange={requestNotificationPermission}
+          trackColor={{
+            false: "#E5E5E5",
+            true: "#8B1A1A",
+          }}
+          thumbColor="#ffffff"
+        />
+      </View>
+
+      {/* Info Box */}
+      <View style={styles.infoBox}>
+        <Feather name="shield" size={20} color="#8B1A1A" style={{ marginRight: 10, marginTop: 2 }} />
+        <Text style={styles.infoText}>
+          We do not access your photos,
+          media or full contact list. Bank SMS
+          access is not required — we use the
+          Account Aggregator framework instead.
+        </Text>
+      </View>
+
+      {/* Spacer */}
+      <View style={{ flex: 1 }} />
+
+      {/* Continue */}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleContinue}
+        activeOpacity={0.85}
+      >
+        <Text style={styles.buttonText}>
+          Continue
+        </Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -216,16 +213,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F8F8F8",
-  },
-
-  scroll: {
-    flex: 1,
-  },
-
-  scrollContent: {
     paddingHorizontal: 22,
     paddingTop: 20,
-    paddingBottom: 28,
   },
 
   backButton: {
