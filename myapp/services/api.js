@@ -6,19 +6,18 @@ import { Platform } from 'react-native';
 // ─────────────────────────────────────────────────────────────────────────────
 // NETWORK CONFIGURATION
 // ─────────────────────────────────────────────────────────────────────────────
-// • Android EMULATOR  → 10.0.2.2 maps to host computer's localhost
-// • Android/iOS PHYSICAL DEVICE (Expo Go via QR) → must use your PC's LAN IP
+// API base URL is read from the .env file (EXPO_PUBLIC_API_URL).
 //
-// HOW TO FIND YOUR LAN IP:
-//   Windows: run `ipconfig` in CMD → look for "IPv4 Address" (e.g. 192.168.1.5)
-//   Mac/Linux: run `ifconfig` → look for "inet" under en0/wlan0
+// SETUP (one-time per developer):
+//   1. Copy myapp/.env.example → myapp/.env
+//   2. Set EXPO_PUBLIC_API_URL=http://<your-lan-ip>:5000/api
+//      Windows: run `ipconfig` → IPv4 Address
+//      Mac/Linux: run `ifconfig` → inet under en0/wlan0
 //
-// ⚠️ CHANGE THIS when running on a physical device!
+// ⚠️  .env is gitignored — never commit real IPs.
 // ─────────────────────────────────────────────────────────────────────────────
-const DEV_LAN_IP = '10.48.129.221'; // ← Your LAN IP from `ipconfig` output
-const PORT = 5000;
-
-export const BASE_URL = `http://${DEV_LAN_IP}:${PORT}/api`;
+export const BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 
 const api = axios.create({
