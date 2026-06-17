@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   View,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Linking,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -25,54 +26,96 @@ export default function PermissionsScreen() {
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [contactsEnabled, setContactsEnabled] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const allPermissionsGranted =
+    locationEnabled && contactsEnabled && notificationsEnabled;
+
+  useEffect(() => {
+    checkExistingPermissions();
+  }, []);
+
+  const checkExistingPermissions = async () => {
+    try {
+      const [location, contacts, notifications] = await Promise.all([
+        Location.getForegroundPermissionsAsync(),
+        Contacts.getPermissionsAsync(),
+        Notifications.getPermissionsAsync(),
+      ]);
+
+      setLocationEnabled(location.status === "granted");
+      setContactsEnabled(contacts.status === "granted");
+      setNotificationsEnabled(notifications.status === "granted");
+    } catch (error) {
+      console.log("Failed to check permissions:", error);
+    }
+  };
+
+  const showPermissionRequiredAlert = (permissionName, canAskAgain = true) => {
+    const message = `${permissionName} permission is required to continue to the dashboard.`;
+
+    if (!canAskAgain) {
+      Alert.alert(
+        "Permission Required",
+        `${message} Please enable it from app settings.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Open Settings", onPress: () => Linking.openSettings() },
+        ]
+      );
+      return;
+    }
+
+    Alert.alert("Permission Required", message);
+  };
 
   // LOCATION
   const requestLocationPermission = async () => {
-    const { status } =
+    const { status, canAskAgain } =
       await Location.requestForegroundPermissionsAsync();
 
     if (status === "granted") {
       setLocationEnabled(true);
     } else {
-      Alert.alert(
-        "Permission Denied",
-        "Location permission was denied."
-      );
+      setLocationEnabled(false);
+      showPermissionRequiredAlert("Location", canAskAgain);
     }
   };
 
   // CONTACTS
   const requestContactsPermission = async () => {
-    const { status } =
+    const { status, canAskAgain } =
       await Contacts.requestPermissionsAsync();
 
     if (status === "granted") {
       setContactsEnabled(true);
     } else {
-      Alert.alert(
-        "Permission Denied",
-        "Contacts permission was denied."
-      );
+      setContactsEnabled(false);
+      showPermissionRequiredAlert("Contacts", canAskAgain);
     }
   };
 
   // NOTIFICATIONS
   const requestNotificationPermission = async () => {
-    const { status } =
+    const { status, canAskAgain } =
       await Notifications.requestPermissionsAsync();
 
     if (status === "granted") {
       setNotificationsEnabled(true);
     } else {
-      Alert.alert(
-        "Permission Denied",
-        "Notification permission was denied."
-      );
+      setNotificationsEnabled(false);
+      showPermissionRequiredAlert("Notification", canAskAgain);
     }
   };
 
   // CONTINUE
   const handleContinue = () => {
+    if (!allPermissionsGranted) {
+      Alert.alert(
+        "Permissions Required",
+        "Please allow Location, Contacts, and Notifications permissions to continue."
+      );
+      return;
+    }
+
     navigation.replace("MainTabs");
   };
     // Future:
@@ -121,7 +164,11 @@ export default function PermissionsScreen() {
 
           <Switch
             value={locationEnabled}
-            onValueChange={requestLocationPermission}
+            onValueChange={(value) =>
+              value
+                ? requestLocationPermission()
+                : showPermissionRequiredAlert("Location")
+            }
             trackColor={{
               false: "#E5E5E5",
               true: "#8B1A1A",
@@ -149,7 +196,11 @@ export default function PermissionsScreen() {
 
           <Switch
             value={contactsEnabled}
-            onValueChange={requestContactsPermission}
+            onValueChange={(value) =>
+              value
+                ? requestContactsPermission()
+                : showPermissionRequiredAlert("Contacts")
+            }
             trackColor={{
               false: "#E5E5E5",
               true: "#8B1A1A",
@@ -177,7 +228,11 @@ export default function PermissionsScreen() {
 
           <Switch
             value={notificationsEnabled}
-            onValueChange={requestNotificationPermission}
+            onValueChange={(value) =>
+              value
+                ? requestNotificationPermission()
+                : showPermissionRequiredAlert("Notification")
+            }
             trackColor={{
               false: "#E5E5E5",
               true: "#8B1A1A",
@@ -199,9 +254,13 @@ export default function PermissionsScreen() {
 
         {/* Continue */}
         <TouchableOpacity
-          style={styles.button}
+          style={[
+            styles.button,
+            !allPermissionsGranted && styles.buttonDisabled,
+          ]}
           onPress={handleContinue}
           activeOpacity={0.85}
+          disabled={!allPermissionsGranted}
         >
           <Text style={styles.buttonText}>
             Continue
@@ -335,6 +394,12 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
 
     elevation: 10,
+  },
+
+  buttonDisabled: {
+    backgroundColor: "#D1D5DB",
+    shadowOpacity: 0,
+    elevation: 0,
   },
 
   buttonText: {
