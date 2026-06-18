@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { documentService } from '../services/documentService';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -154,7 +155,7 @@ export default function OnboardingDocumentUploadScreen() {
   }
 
   // ─── Continue ──────────────────────────────────────────────────────────────
-  function handleContinue() {
+  async function handleContinue() {
     const uploadedCount = Object.values(docStates).filter((s) => s.status === 'uploaded').length;
     if (uploadedCount === 0) {
       Alert.alert(
@@ -163,7 +164,12 @@ export default function OnboardingDocumentUploadScreen() {
       );
       return;
     }
-    navigation.navigate('Permissions');
+    const permissionsGranted = await AsyncStorage.getItem('permissions_granted');
+    if (permissionsGranted === 'true') {
+      navigation.navigate('MainTabs');
+    } else {
+      navigation.navigate('Permissions');
+    }
   }
 
   // ─── Render ────────────────────────────────────────────────────────────────

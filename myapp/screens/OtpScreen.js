@@ -53,7 +53,6 @@ export default function OtpScreen() {
         try {
           const onboardingRes = await authService.checkOnboarding();
           if (onboardingRes.success && onboardingRes.onboardingComplete) {
-            // Existing borrower: Go to Permissions -> MainTabs
             navigation.navigate('Permissions');
           } else {
             // New borrower: Go to Onboarding select type screen

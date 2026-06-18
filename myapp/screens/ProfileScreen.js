@@ -154,9 +154,7 @@ export default function ProfileScreen() {
             My Profile
           </Text>
 
-          <TouchableOpacity style={styles.editButton}>
-            <Feather name="edit-2" size={18} color="#8B1A1A" />
-          </TouchableOpacity>
+          <View style={styles.headerSpacer} />
         </View>
 
         {/* Completion Card */}
@@ -301,18 +299,9 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
 
-  editButton: {
+  headerSpacer: {
     width: 42,
     height: 42,
-    borderRadius: 21,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  editIcon: {
-    color: "#8B1A1A",
-    fontSize: 20,
   },
 
   completionCard: {

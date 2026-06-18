@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import {
   View,
@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import * as Location from "expo-location";
 import * as Contacts from "expo-contacts";
@@ -28,26 +29,6 @@ export default function PermissionsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const allPermissionsGranted =
     locationEnabled && contactsEnabled && notificationsEnabled;
-
-  useEffect(() => {
-    checkExistingPermissions();
-  }, []);
-
-  const checkExistingPermissions = async () => {
-    try {
-      const [location, contacts, notifications] = await Promise.all([
-        Location.getForegroundPermissionsAsync(),
-        Contacts.getPermissionsAsync(),
-        Notifications.getPermissionsAsync(),
-      ]);
-
-      setLocationEnabled(location.status === "granted");
-      setContactsEnabled(contacts.status === "granted");
-      setNotificationsEnabled(notifications.status === "granted");
-    } catch (error) {
-      console.log("Failed to check permissions:", error);
-    }
-  };
 
   const showPermissionRequiredAlert = (permissionName, canAskAgain = true) => {
     const message = `${permissionName} permission is required to continue to the dashboard.`;
@@ -107,7 +88,7 @@ export default function PermissionsScreen() {
   };
 
   // CONTINUE
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!allPermissionsGranted) {
       Alert.alert(
         "Permissions Required",
@@ -116,6 +97,7 @@ export default function PermissionsScreen() {
       return;
     }
 
+    await AsyncStorage.setItem('permissions_granted', 'true');
     navigation.replace("MainTabs");
   };
     // Future:
