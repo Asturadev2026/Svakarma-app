@@ -65,21 +65,9 @@ export default function ProductDetailScreen() {
     setAmount(next);
   };
 
-  const apply = async () => {
-    if (submitting) return;
-    setSubmitting(true);
-    try {
-      const res = await applicationService.create({ productKey, amount, tenorMonths: tenor });
-      if (res?.success && res.application) {
-        navigation.navigate('Verification', { applicationId: res.application.id });
-      } else {
-        throw new Error(res?.message || 'Could not start application.');
-      }
-    } catch (e) {
-      Alert.alert('Error', e.message || 'Could not start application.');
-    } finally {
-      setSubmitting(false);
-    }
+  const apply = () => {
+    // Go to the product-specific application form (it creates the application).
+    navigation.navigate('ApplicationForm', { productKey, amount, tenorMonths: tenor, product });
   };
 
   if (loading || !product) {

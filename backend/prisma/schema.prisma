@@ -377,6 +377,7 @@ model LoanApplication {
   productKey      String?                    // catalog key e.g. "samridhi"
   tenorMonths     Int?
   interestRate    Float?                     // requested/indicative annual %
+  formData        Json?                      // product-specific application answers
   // Journey stage: draft | verifying | underwriting | offer | references | bank | esign | disbursed | rejected
   stage           String                     @default("draft")
   // Offer produced by the underwriting engine

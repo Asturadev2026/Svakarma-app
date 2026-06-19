@@ -30,6 +30,7 @@ import MyApplicationsScreen from "./screens/MyApplicationsScreen";
 import HelpScreen from "./screens/HelpScreen";
 import ProfileReferencesScreen from "./screens/ProfileReferencesScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import ApplicationFormScreen from "./screens/ApplicationFormScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -168,6 +169,11 @@ export default function App() {
         <Stack.Screen
           name="ProfileDetails"
           component={ProfileScreen}
+        />
+
+        <Stack.Screen
+          name="ApplicationForm"
+          component={ApplicationFormScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

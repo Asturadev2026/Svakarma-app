@@ -13,12 +13,21 @@ export class ApplicationService {
    * bounds, computes an indicative EMI, and seeds the 7 verification sources as
    * 'pending' so the verification screen has rows to connect.
    */
-  async create(userId: string, input: { productKey: string; amount: number; tenorMonths: number }) {
+  async create(userId: string, input: { productKey: string; amount: number; tenorMonths: number; formData?: any }) {
     const product = productService.getByKey(input.productKey);
     const amount = clamp(Number(input.amount) || product.defaultAmount, product.minAmount, product.maxAmount);
     const tenorMonths = clamp(Number(input.tenorMonths) || product.defaultTenor, product.minTenor, product.maxTenor);
     const indicativeRate = product.maxRate; // conservative until underwriting prices it
     const breakup = computeEmi(amount, indicativeRate, tenorMonths, product.processingFeePct);
+
+    // Validate required product-specific fields.
+    const formData = input.formData || {};
+    const missing = (product.formFields || [])
+      .filter((f) => f.required && !String(formData[f.key] ?? '').trim())
+      .map((f) => f.label);
+    if (missing.length > 0) {
+      throw new AppError(400, `Please complete: ${missing.join(', ')}.`);
+    }
 
     const app = await prisma.loanApplication.create({
       data: {
@@ -28,6 +37,7 @@ export class ApplicationService {
         productKey: product.key,
         tenorMonths,
         interestRate: indicativeRate,
+        formData,
         stage: 'verifying',
         status: 'PENDING',
         verifications: {

@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { loanService } from "../services/loanService";
+import { productService } from "../services/productService";
 
 const LOAN_PRODUCTS = [
   {
@@ -94,6 +95,7 @@ const STATUS_COLORS = {
 export default function LoansScreen() {
   const navigation = useNavigation();
   const [applications, setApplications] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -113,12 +115,37 @@ export default function LoansScreen() {
 
   useEffect(() => {
     fetchApplications();
+    (async () => {
+      try {
+        const r = await productService.getProducts();
+        if (r?.success) setProducts(r.data || []);
+      } catch (e) { /* fall back to the built-in list */ }
+    })();
   }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchApplications(true);
   }, []);
+
+  // Prefer the API catalog (so new products appear automatically); fall back to
+  // the built-in list if the fetch fails.
+  const displayProducts = products.length > 0
+    ? products.map((p) => ({
+        id: p.key,
+        title: p.name,
+        subtitle: p.tagline,
+        icon: p.icon,
+        range: `₹${Math.round(p.minAmount / 100000)}L – ₹${Math.round(p.maxAmount / 100000)}L`,
+        rate: `${p.minRate}–${p.maxRate}% p.a.`,
+        tenure: p.maxTenor < 12
+          ? `${p.minTenor}–${p.maxTenor} mo`
+          : `${Math.max(1, Math.round(p.minTenor / 12))}–${Math.round(p.maxTenor / 12)} yrs`,
+        color: p.color,
+        accent: p.accent,
+        badge: p.badge,
+      }))
+    : LOAN_PRODUCTS;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -254,7 +281,7 @@ export default function LoansScreen() {
 
         {/* Loan Products */}
         <Text style={styles.sectionTitle}>Loan Products</Text>
-        {LOAN_PRODUCTS.map((product) => (
+        {displayProducts.map((product) => (
           <TouchableOpacity
             key={product.id}
             style={styles.productCard}

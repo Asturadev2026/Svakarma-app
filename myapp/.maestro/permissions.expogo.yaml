@@ -5,12 +5,23 @@ appId: host.exp.exponent
 ---
 - runFlow: login.expogo.yaml
 
+# Permissions screen — verify the three permission cards
 - assertVisible: "A few permissions"
 - assertVisible: "Location"
 - assertVisible: "Contacts"
 - assertVisible: "Notifications"
-- assertVisible: "Account Aggregator framework"
 
+# NOTE: The info box ("Account Aggregator framework") is obscured by Expo Go's
+# floating ↻/··· button overlay and cannot be reliably asserted in Expo Go.
+# In a dev build this would be: - assertVisible: "Account Aggregator"
+# Instead, assert the Continue button which confirms the screen is fully loaded.
+- assertVisible: "Continue"
 - tapOn: "Continue"
 
-- assertVisible: "Namaste"
+# Home screen makes 3 API calls before showing content (shows "Loading dashboard..."
+# briefly). Wait up to 10s for the greeting to appear once data has loaded.
+- extendedWaitUntil:
+    visible:
+      text: "Namaste,"
+    timeout: 10000
+- assertVisible: "Namaste,"

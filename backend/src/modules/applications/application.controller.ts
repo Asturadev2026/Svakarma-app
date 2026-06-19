@@ -6,8 +6,8 @@ export class ApplicationController {
   async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId!;
-      const { productKey, amount, tenorMonths } = req.body || {};
-      const result = await applicationService.create(userId, { productKey, amount, tenorMonths });
+      const { productKey, amount, tenorMonths, formData } = req.body || {};
+      const result = await applicationService.create(userId, { productKey, amount, tenorMonths, formData });
       return res.status(201).json({ success: true, ...result });
     } catch (e) { next(e); }
   }

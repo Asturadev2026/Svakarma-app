@@ -1,32 +1,47 @@
 # Maestro flow: Login — EXPO GO variant (physical phone or emulator).
 #
-# Expo Go can't be deep-launched to your project by Maestro, so there is NO
-# `launchApp` here — the flow runs against whatever is on screen. Before running:
-#   1. Open the app in Expo Go and let it land on the Splash screen
-#      (shake → Reload, or press `r` in the `expo start` terminal, to reset it).
-#   2. Make sure `adb devices` lists your phone (USB debugging on, connected).
-#   3. Backend running in mock mode + reachable.
+# BEFORE EVERY RUN — reset the app to the Splash screen:
+#   Press `r` in the `npx expo start` terminal  (or shake phone → Reload).
+#   The app must show the "Get Started →" button before you run this flow.
 #
 # Demo number 9999999999 → OTP 123456 (auto-filled). Reaching Permissions needs
 # an already-onboarded number (see MAESTRO_TESTING.md §3).
 
 appId: host.exp.exponent
 ---
-# Splash → Login
-- assertVisible: "Get Started"
-- tapOn: "Get Started"
+# launchApp opens Expo Go's own home screen (not your project directly).
+# Press `r` in the `npx expo start` terminal BEFORE running this flow
+# so the app reloads to Splash. Then this flow taps into it from Expo Go's home.
+- launchApp
 
-# Login
+# Expo Go home shows "Recently opened" list — tap the first myapp entry.
+# This opens your Svakarma project inside Expo Go.
+- tapOn: "myapp"
+
+# Wait for the Svakarma app bundle to load
+- extendedWaitUntil:
+    visible:
+      text: "Get Started →"
+    timeout: 15000
+
+# Splash — Svakarma app is now loaded
+- assertVisible: "Get Started →"
+- tapOn: "Get Started →"
+
+# Login screen
 - assertVisible: "Welcome"
 - tapOn: "98765 43210"
 - inputText: "9999999999"
 - hideKeyboard
 - tapOn: "Send OTP"
 
-# OTP (mock provider auto-fills the demo code)
+# OTP screen
+# The mock backend returns devOtp=123456 which auto-fills and shows the banner.
+# Full banner label text: "DEMO MODE · mock SMS provider"
 - assertVisible: "Verify Mobile"
-- assertVisible: "DEMO MODE"
+- assertVisible: "DEMO MODE · mock SMS provider"
+- assertVisible: "Verify & Proceed"
 - tapOn: "Verify & Proceed"
 
-# Landed past login
+# Landed past login (onboarded number → Permissions screen)
 - assertVisible: "A few permissions"
