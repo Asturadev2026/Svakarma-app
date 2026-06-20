@@ -15,7 +15,7 @@ export default function QuickActions() {
   const navigation = useNavigation();
 
   const actions = [
-    { label: "Apply", icon: "file-text", screen: "ProductDetail", params: { productKey: "samridhi" } },
+    { label: "Apply", icon: "file-text", screen: "MainTabs", params: { screen: "Loans" } },
     { label: "Free CIBIL", icon: "trending-up", screen: "CIBIL" },
     { label: "EMI Calc", icon: "calculator", screen: "EMICalculator" },
     { label: "Status", icon: "activity", screen: "MyApplications" },
